@@ -15,6 +15,15 @@ Scope {
 
     property bool isVertical: false
     property bool collapsed: false
+    readonly property bool autoHide: Config.options?.screenRecord?.recordingOsd?.autoHide ?? false
+    property bool revealed: true
+    property bool osdTargetHovered: false
+
+    function startHideTimer(): void {
+        if (!autoHide) return
+        if (osdTargetHovered) return
+        hideTimer.restart()
+    }
 
     function formatTime(totalSeconds: int): string {
         const hours = Math.floor(totalSeconds / 3600)
@@ -35,7 +44,18 @@ Scope {
             if (RecorderStatus.isRecording) {
                 root.collapsed = false
                 root.isVertical = false
+                root.revealed = true
             }
+        }
+    }
+
+    Timer {
+        id: hideTimer
+        interval: 2000
+        onTriggered: {
+            if (!root.autoHide) return
+            if (root.osdTargetHovered) return
+            root.revealed = false
         }
     }
 
@@ -61,7 +81,29 @@ Scope {
             WlrLayershell.keyboardFocus: WlrKeyboardFocus.None
             color: "transparent"
 
-            mask: Region { item: pill }
+            // Hot zone for auto-hide hover detection (only active when hidden)
+            Item {
+                id: autoHideHotZone
+                anchors.top: parent.top
+                anchors.horizontalCenter: parent.horizontalCenter
+                width: parent.width * 0.6
+                height: 36
+                visible: root.autoHide && !root.revealed
+
+                HoverHandler {
+                    onHoveredChanged: {
+                        root.osdTargetHovered = hovered || pill._osdHovered
+                        if (hovered) {
+                            root.revealed = true
+                            hideTimer.stop()
+                        } else if (root.autoHide && root.revealed) {
+                            root.startHideTimer()
+                        }
+                    }
+                }
+            }
+
+            mask: Region { item: root.autoHide && !root.revealed ? autoHideHotZone : pill }
 
             readonly property real edgeMargin: Appearance.sizes.elevationMargin
 
@@ -128,6 +170,11 @@ Scope {
                 property bool animatePosition: false
                 property real contentPadding: 6
                 property bool _positioned: false
+                property bool _osdHovered: false
+
+                // When auto-hide is active and not revealed: fade + shrink away
+                opacity: root.autoHide && !root.revealed ? 0 : (initScale < 0.95 ? 0 : 1)
+                scale: root.autoHide && !root.revealed ? 0.5 : initScale
 
                 width: root.isVertical
                     ? verticalContent.implicitWidth + contentPadding * 2
@@ -135,6 +182,20 @@ Scope {
                 height: root.isVertical
                     ? verticalContent.implicitHeight + contentPadding * 2
                     : horizontalContent.implicitHeight + contentPadding * 2
+
+                HoverHandler {
+                    onHoveredChanged: {
+                        pill._osdHovered = hovered
+                        osdTargetHovered = hovered || autoHideHotZone.hovered
+                        if (hovered) {
+                            if (root.autoHide && !root.revealed)
+                                root.revealed = true
+                            hideTimer.stop()
+                        } else if (root.autoHide && root.revealed) {
+                            root.startHideTimer()
+                        }
+                    }
+                }
 
                 // Position once the window has its real size
                 Connections {
@@ -150,8 +211,6 @@ Scope {
                 }
 
                 property real initScale: 0.9
-                scale: initScale
-                opacity: initScale < 0.95 ? 0 : 1
                 transformOrigin: Item.Center
 
                 GlassBackground {
@@ -523,10 +582,13 @@ Scope {
 
         function show(): void {
             root.collapsed = false
+            root.revealed = true
         }
 
         function hide(): void {
             root.collapsed = true
+            if (root.autoHide)
+                root.revealed = false
         }
     }
 }

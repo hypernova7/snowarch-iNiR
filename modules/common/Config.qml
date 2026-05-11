@@ -1408,6 +1408,9 @@ Singleton {
             }
 
             property JsonObject screenRecord: JsonObject {
+                property JsonObject recordingOsd: JsonObject {
+                    property bool autoHide: false
+                }
                 property bool showOsd: false
                 property bool showNotifications: true
                 property string savePath: "" // Empty = use XDG Videos or ~/Videos
