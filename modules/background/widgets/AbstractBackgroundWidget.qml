@@ -291,6 +291,7 @@ AbstractWidget {
         // Prevent drag from starting on toolbar clicks
         MouseArea {
             anchors.fill: parent
+            z: -1
             acceptedButtons: Qt.AllButtons
             propagateComposedEvents: false
         }
@@ -405,6 +406,7 @@ AbstractWidget {
 
             MouseArea {
                 anchors.fill: parent
+                z: -1
                 acceptedButtons: Qt.AllButtons
                 propagateComposedEvents: false
             }

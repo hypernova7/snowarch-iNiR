@@ -19,7 +19,7 @@ Item {
         return false;
     }
 
-    MouseArea { anchors.fill: parent; acceptedButtons: Qt.AllButtons; propagateComposedEvents: false }
+    MouseArea { anchors.fill: parent; z: -1; acceptedButtons: Qt.AllButtons; propagateComposedEvents: false }
 
     Rectangle {
         anchors.fill: parent
@@ -63,6 +63,7 @@ Item {
                     StyledText { text: builtinDelegate.modelData.label; color: Appearance.colors.colOnLayer2; font.pixelSize: Appearance.font.pixelSize.small; anchors.verticalCenter: parent.verticalCenter }
                 }
                 RippleButton {
+                    id: builtinToggleButton
                     anchors { right: parent.right; verticalCenter: parent.verticalCenter }
                     width: 40; height: 28
                     buttonRadius: Appearance.rounding.small
@@ -71,7 +72,7 @@ Item {
                     colBackgroundHover: toggled ? ColorUtils.applyAlpha(Appearance.colors.colPrimary, 0.24) : ColorUtils.applyAlpha(Appearance.colors.colOnLayer2, 0.12)
                     colRipple: ColorUtils.applyAlpha(Appearance.colors.colPrimary, 0.12)
                     downAction: () => Config.setNestedValue("background.widgets." + builtinDelegate.modelData.key + ".enable", !builtinDelegate.widgetEnabled)
-                    contentItem: MaterialSymbol { anchors.centerIn: parent; text: parent.toggled ? "visibility" : "visibility_off"; iconSize: 16; color: parent.toggled ? Appearance.colors.colPrimary : ColorUtils.applyAlpha(Appearance.colors.colOnLayer2, 0.5) }
+                    contentItem: MaterialSymbol { anchors.centerIn: parent; text: builtinToggleButton.toggled ? "visibility" : "visibility_off"; iconSize: 16; color: builtinToggleButton.toggled ? Appearance.colors.colPrimary : ColorUtils.applyAlpha(Appearance.colors.colOnLayer2, 0.5) }
                 }
             }
         }
@@ -159,6 +160,7 @@ Item {
                         StyledToolTip { text: Translation.tr("Open in editor") }
                     }
                     RippleButton {
+                        id: customToggleButton
                         width: 40; height: 28
                         buttonRadius: Appearance.rounding.small
                         toggled: customDelegate.widgetEnabled
@@ -166,7 +168,7 @@ Item {
                         colBackgroundHover: toggled ? ColorUtils.applyAlpha(Appearance.colors.colPrimary, 0.24) : ColorUtils.applyAlpha(Appearance.colors.colOnLayer2, 0.12)
                         colRipple: ColorUtils.applyAlpha(Appearance.colors.colPrimary, 0.12)
                         downAction: () => Config.setNestedValue("background.widgets.custom." + customDelegate.modelData.id + ".enable", !customDelegate.widgetEnabled)
-                        contentItem: MaterialSymbol { anchors.centerIn: parent; text: parent.toggled ? "visibility" : "visibility_off"; iconSize: 16; color: parent.toggled ? Appearance.colors.colPrimary : ColorUtils.applyAlpha(Appearance.colors.colOnLayer2, 0.5) }
+                        contentItem: MaterialSymbol { anchors.centerIn: parent; text: customToggleButton.toggled ? "visibility" : "visibility_off"; iconSize: 16; color: customToggleButton.toggled ? Appearance.colors.colPrimary : ColorUtils.applyAlpha(Appearance.colors.colOnLayer2, 0.5) }
                     }
                 }
             }

@@ -1198,6 +1198,7 @@ Scope {
                         // Prevent clicks from falling through
                         MouseArea {
                             anchors.fill: parent
+                            z: -1
                             acceptedButtons: Qt.AllButtons
                         }
 
@@ -1247,6 +1248,7 @@ Scope {
                                     { key: "battery", icon: "battery_full", label: "Battery", defaultOn: false }
                                 ]
                                 RippleButton {
+                                    id: quickWidgetButton
                                     required property var modelData
                                     readonly property bool widgetEnabled: bgRoot._widgetEnabled(modelData.key, modelData.defaultOn)
                                     width: 36; height: 36
@@ -1257,14 +1259,14 @@ Scope {
                                     colBackgroundToggled: CF.ColorUtils.applyAlpha(Appearance.colors.colPrimary, 0.16)
                                     colBackgroundToggledHover: CF.ColorUtils.applyAlpha(Appearance.colors.colPrimary, 0.24)
                                     colRipple: CF.ColorUtils.applyAlpha(Appearance.colors.colOnLayer2, 0.12)
-                                    downAction: () => Config.setNestedValue("background.widgets." + modelData.key + ".enable", !widgetEnabled)
+                                    downAction: () => Config.setNestedValue("background.widgets." + quickWidgetButton.modelData.key + ".enable", !quickWidgetButton.widgetEnabled)
                                     contentItem: MaterialSymbol {
                                         anchors.centerIn: parent
-                                        text: parent.modelData.icon
+                                        text: quickWidgetButton.modelData.icon
                                         iconSize: 18
-                                        color: parent.toggled ? Appearance.colors.colPrimary : CF.ColorUtils.applyAlpha(Appearance.colors.colOnLayer2, 0.5)
+                                        color: quickWidgetButton.toggled ? Appearance.colors.colPrimary : CF.ColorUtils.applyAlpha(Appearance.colors.colOnLayer2, 0.5)
                                     }
-                                    StyledToolTip { text: modelData.label }
+                                    StyledToolTip { text: quickWidgetButton.modelData.label }
                                 }
                             }
 
@@ -1272,6 +1274,7 @@ Scope {
                             Repeater {
                                 model: CustomWidgets.ready ? CustomWidgets.widgets : []
                                 RippleButton {
+                                    id: customWidgetButton
                                     required property var modelData
                                     readonly property bool widgetEnabled: Config.getNestedValue("background.widgets.custom." + modelData.id + ".enable", true)
                                     width: 36; height: 36
@@ -1282,14 +1285,14 @@ Scope {
                                     colBackgroundToggled: CF.ColorUtils.applyAlpha(Appearance.colors.colPrimary, 0.16)
                                     colBackgroundToggledHover: CF.ColorUtils.applyAlpha(Appearance.colors.colPrimary, 0.24)
                                     colRipple: CF.ColorUtils.applyAlpha(Appearance.colors.colOnLayer2, 0.12)
-                                    downAction: () => Config.setNestedValue("background.widgets.custom." + modelData.id + ".enable", !widgetEnabled)
+                                    downAction: () => Config.setNestedValue("background.widgets.custom." + customWidgetButton.modelData.id + ".enable", !customWidgetButton.widgetEnabled)
                                     contentItem: MaterialSymbol {
                                         anchors.centerIn: parent
-                                        text: parent.modelData.icon || "widgets"
+                                        text: customWidgetButton.modelData.icon || "widgets"
                                         iconSize: 18
-                                        color: parent.toggled ? Appearance.colors.colPrimary : CF.ColorUtils.applyAlpha(Appearance.colors.colOnLayer2, 0.5)
+                                        color: customWidgetButton.toggled ? Appearance.colors.colPrimary : CF.ColorUtils.applyAlpha(Appearance.colors.colOnLayer2, 0.5)
                                     }
-                                    StyledToolTip { text: modelData.name }
+                                    StyledToolTip { text: customWidgetButton.modelData.name }
                                 }
                             }
 
@@ -1445,9 +1448,9 @@ Scope {
                         required property var modelData
                         required property int index
 
-                        readonly property bool shown: Config.getNestedValue("background.widgets.custom." + modelData.id + ".enable", true)
-                        active: shown
-                        opacity: shown ? 1 : 0
+                        readonly property bool widgetShown: Config.getNestedValue("background.widgets.custom." + modelData.id + ".enable", true)
+                        active: widgetShown
+                        opacity: widgetShown ? 1 : 0
                         visible: opacity > 0
                         Behavior on opacity {
                             enabled: Appearance.animationsEnabled
