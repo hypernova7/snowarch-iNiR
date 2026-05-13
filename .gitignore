@@ -98,6 +98,9 @@ debug_log.txt
 # ── Reference checkouts / local audits (not for distribution) ─
 .referencia/
 context.md
+progress.md
+research.md
+plan.md
 
 # ── WIP / internal docs (not for distribution) ───────────────
 docs/*_IMPLEMENTATION.md
