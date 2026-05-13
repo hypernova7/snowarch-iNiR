@@ -350,6 +350,12 @@
         "playerPreset": "full",
         "x": 240,
         "y": 240
+      },
+      "visualizer": {
+        "enable": false,
+        "placementStrategy": "free",
+        "x": 100,
+        "y": 100
       }
     },
     "multiMonitor": {
