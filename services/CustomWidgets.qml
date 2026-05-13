@@ -109,13 +109,7 @@ Singleton {
     }
 
     function _readCustomConfig(widgetId: string, key: string): var {
-        const parts = key.split(".");
-        let obj = Config.customWidgetData?.[widgetId];
-        for (let i = 0; i < parts.length; i++) {
-            if (obj == null) return undefined;
-            obj = obj[parts[i]];
-        }
-        return obj;
+        return Config.getNestedValue("background.widgets.custom." + widgetId + "." + key, undefined);
     }
 
     function _defaultForSpec(spec: var): var {
@@ -175,7 +169,7 @@ Singleton {
 
     // Get a custom widget's config value (freeform namespace)
     function getConfigValue(widgetId: string, key: string, defaultValue: var): var {
-        return Config.customWidgetData?.[widgetId]?.[key] ?? defaultValue;
+        return Config.getNestedValue("background.widgets.custom." + widgetId + "." + key, defaultValue);
     }
 
     // Set a custom widget's config value

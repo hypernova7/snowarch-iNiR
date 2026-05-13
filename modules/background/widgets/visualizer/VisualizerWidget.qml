@@ -17,8 +17,8 @@ AbstractBackgroundWidget {
     configEntryName: "visualizer"
     defaultConfig: ({ placementStrategy: "free", preset: "default", barCount: 48, barSpacing: 2, barRadius: 2, barMinHeight: 1, contentWidth: 304, contentHeight: 104, dim: 0, widgetScale: 100, widgetOpacity: 100, showBackground: true, showBorder: true, colorMode: "auto", x: 100, y: 100 })
 
-    implicitWidth: Math.round((Config.options?.background?.widgets?.visualizer?.contentWidth ?? 304) * scaleFactor)
-    implicitHeight: Math.round((Config.options?.background?.widgets?.visualizer?.contentHeight ?? 104) * scaleFactor)
+    implicitWidth: Math.round((Config.getNestedValue("background.widgets.visualizer.contentWidth", 304)) * scaleFactor)
+    implicitHeight: Math.round((Config.getNestedValue("background.widgets.visualizer.contentHeight", 104)) * scaleFactor)
 
     visibleWhenLocked: false
     needsColText: true
@@ -34,18 +34,18 @@ AbstractBackgroundWidget {
                 StyledText { text: Translation.tr("Bars"); color: Appearance.colors.colOnLayer2; font.pixelSize: Appearance.font.pixelSize.small; anchors.verticalCenter: parent.verticalCenter }
                 StyledSpinBox {
                     from: 8; to: 128; stepSize: 4
-                    value: Config.options?.background?.widgets?.visualizer?.barCount ?? 48
+                    value: Config.getNestedValue("background.widgets.visualizer.barCount", 48)
                     onValueModified: Config.setNestedValue("background.widgets.visualizer.barCount", value)
                 }
             }
         }
     }
 
-    readonly property bool _active: Config.options?.background?.widgets?.visualizer?.enable ?? false
+    readonly property bool _active: Config.getNestedValue("background.widgets.visualizer.enable", false)
 
     // ── Dim factor (0..1) ──────────────────────────────────────
     property real dimFactor: {
-        const v = Config.options?.background?.widgets?.visualizer?.dim ?? 0;
+        const v = Config.getNestedValue("background.widgets.visualizer.dim", 0);
         const n = Number(v);
         return Math.max(0, Math.min(1, Number.isFinite(n) ? n / 100 : 0));
     }
@@ -86,10 +86,10 @@ AbstractBackgroundWidget {
         anchors.margins: Appearance.angelEverywhere || Appearance.inirEverywhere ? 4 : 0
         points: cavaProcess.points
         live: root._active
-        barCount: Config.options?.background?.widgets?.visualizer?.barCount ?? 48
-        barSpacing: Config.options?.background?.widgets?.visualizer?.barSpacing ?? 2
-        barMinHeight: Config.options?.background?.widgets?.visualizer?.barMinHeight ?? 1
-        barRadius: Config.options?.background?.widgets?.visualizer?.barRadius ?? 2
+        barCount: Config.getNestedValue("background.widgets.visualizer.barCount", 48)
+        barSpacing: Config.getNestedValue("background.widgets.visualizer.barSpacing", 2)
+        barMinHeight: Config.getNestedValue("background.widgets.visualizer.barMinHeight", 1)
+        barRadius: Config.getNestedValue("background.widgets.visualizer.barRadius", 2)
         // Multi-color visualizer: low freq = secondary, mid = primary, high = tertiary
         colorLow: Appearance.angelEverywhere ? Appearance.angel.colSecondaryContainer
             : Appearance.inirEverywhere ? Appearance.inir.colSecondaryContainer

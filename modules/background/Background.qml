@@ -73,7 +73,12 @@ Scope {
         readonly property var workSafetyEnableOptions: workSafetyOptions.enable ?? {}
         readonly property var workSafetyTriggerOptions: workSafetyOptions.triggerCondition ?? {}
         readonly property var lockBlurOptions: Config.options?.lock?.blur ?? {}
-        readonly property var backgroundWidgetsOptions: backgroundOptions.widgets ?? {}
+        function _widgetConfigValue(widgetKey: string, key: string, fallback: var): var {
+            return Config.getNestedValue("background.widgets." + widgetKey + "." + key, fallback);
+        }
+        function _widgetEnabled(widgetKey: string, fallback: bool): bool {
+            return Boolean(bgRoot._widgetConfigValue(widgetKey, "enable", fallback));
+        }
 
         // Multi-monitor wallpaper support
         // IMPORTANT: Only use WallpaperListener when multi-monitor is enabled.
@@ -1060,8 +1065,8 @@ Scope {
                         NumberAnimation { duration: Appearance.animation.elementMoveEnter.duration; easing.type: Appearance.animation.elementMoveEnter.type; easing.bezierCurve: Appearance.animation.elementMoveEnter.bezierCurve }
                     }
 
-                    readonly property int gridSize: Config.options?.background?.widgets?.editGrid?.size ?? 32
-                    readonly property bool gridVisible: Config.options?.background?.widgets?.editGrid?.snap ?? true
+                    readonly property int gridSize: Config.getNestedValue("background.widgets.editGrid.size", 32)
+                    readonly property bool gridVisible: Config.getNestedValue("background.widgets.editGrid.snap", true)
                     readonly property color gridColor: Appearance.angelEverywhere ? Appearance.angel.colPrimary
                         : Appearance.inirEverywhere ? Appearance.inir.colAccent
                         : Appearance.auroraEverywhere ? Appearance.m3colors.m3primary
@@ -1205,14 +1210,14 @@ Scope {
                             RippleButton {
                                 width: 36; height: 36
                                 buttonRadius: Appearance.rounding.full
-                                toggled: Config.options?.background?.widgets?.editGrid?.snap ?? true
+                                toggled: Config.getNestedValue("background.widgets.editGrid.snap", true)
                                 colBackground: "transparent"
                                 colBackgroundHover: CF.ColorUtils.applyAlpha(Appearance.colors.colOnLayer2, 0.08)
                                 colBackgroundToggled: CF.ColorUtils.applyAlpha(Appearance.colors.colPrimary, 0.16)
                                 colBackgroundToggledHover: CF.ColorUtils.applyAlpha(Appearance.colors.colPrimary, 0.24)
                                 colRipple: CF.ColorUtils.applyAlpha(Appearance.colors.colOnLayer2, 0.12)
                                 downAction: () => {
-                                    const current = Config.options?.background?.widgets?.editGrid?.snap ?? true;
+                                    const current = Config.getNestedValue("background.widgets.editGrid.snap", true);
                                     Config.setNestedValue("background.widgets.editGrid.snap", !current);
                                 }
                                 contentItem: MaterialSymbol {
@@ -1234,16 +1239,16 @@ Scope {
                             // Quick widget toggles
                             Repeater {
                                 model: [
-                                    { key: "weather", icon: "cloud", label: "Weather" },
-                                    { key: "clock", icon: "schedule", label: "Clock" },
-                                    { key: "mediaControls", icon: "album", label: "Media" },
-                                    { key: "visualizer", icon: "graphic_eq", label: "Visualizer" },
-                                    { key: "systemMonitor", icon: "monitor_heart", label: "System Monitor" },
-                                    { key: "battery", icon: "battery_full", label: "Battery" }
+                                    { key: "weather", icon: "cloud", label: "Weather", defaultOn: true },
+                                    { key: "clock", icon: "schedule", label: "Clock", defaultOn: true },
+                                    { key: "mediaControls", icon: "album", label: "Media", defaultOn: true },
+                                    { key: "visualizer", icon: "graphic_eq", label: "Visualizer", defaultOn: false },
+                                    { key: "systemMonitor", icon: "monitor_heart", label: "System Monitor", defaultOn: false },
+                                    { key: "battery", icon: "battery_full", label: "Battery", defaultOn: false }
                                 ]
                                 RippleButton {
                                     required property var modelData
-                                    readonly property bool widgetEnabled: Config.options?.background?.widgets?.[modelData.key]?.enable ?? (modelData.key === "weather" || modelData.key === "clock" || modelData.key === "mediaControls")
+                                    readonly property bool widgetEnabled: bgRoot._widgetEnabled(modelData.key, modelData.defaultOn)
                                     width: 36; height: 36
                                     buttonRadius: Appearance.rounding.full
                                     toggled: widgetEnabled
@@ -1268,7 +1273,7 @@ Scope {
                                 model: CustomWidgets.ready ? CustomWidgets.widgets : []
                                 RippleButton {
                                     required property var modelData
-                                    readonly property bool widgetEnabled: Config.customWidgetData?.[modelData.id]?.enable ?? true
+                                    readonly property bool widgetEnabled: Config.getNestedValue("background.widgets.custom." + modelData.id + ".enable", true)
                                     width: 36; height: 36
                                     buttonRadius: Appearance.rounding.full
                                     toggled: widgetEnabled
@@ -1359,7 +1364,7 @@ Scope {
                 }
 
                 FadeLoader {
-                    shown: bgRoot.backgroundWidgetsOptions.weather?.enable ?? true
+                    shown: bgRoot._widgetEnabled("weather", true)
                     sourceComponent: WeatherWidget {
                         widgetIndex: 0
                         screenWidth: bgRoot.screen.width
@@ -1371,7 +1376,7 @@ Scope {
                 }
 
                 FadeLoader {
-                    shown: bgRoot.backgroundWidgetsOptions.clock?.enable ?? true
+                    shown: bgRoot._widgetEnabled("clock", true)
                     sourceComponent: ClockWidget {
                         widgetIndex: 1
                         screenWidth: bgRoot.screen.width
@@ -1384,7 +1389,7 @@ Scope {
                 }
 
                 FadeLoader {
-                    shown: bgRoot.backgroundWidgetsOptions.mediaControls?.enable ?? true
+                    shown: bgRoot._widgetEnabled("mediaControls", true)
                     sourceComponent: MediaControlsWidget {
                         widgetIndex: 2
                         screenWidth: bgRoot.screen.width
@@ -1396,7 +1401,7 @@ Scope {
                 }
 
                 FadeLoader {
-                    shown: bgRoot.backgroundWidgetsOptions.visualizer?.enable ?? false
+                    shown: bgRoot._widgetEnabled("visualizer", false)
                     sourceComponent: VisualizerWidget {
                         widgetIndex: 3
                         screenWidth: bgRoot.screen.width
@@ -1408,7 +1413,7 @@ Scope {
                 }
 
                 FadeLoader {
-                    shown: bgRoot.backgroundWidgetsOptions.systemMonitor?.enable ?? false
+                    shown: bgRoot._widgetEnabled("systemMonitor", false)
                     sourceComponent: SystemMonitorWidget {
                         widgetIndex: 4
                         screenWidth: bgRoot.screen.width
@@ -1420,7 +1425,7 @@ Scope {
                 }
 
                 FadeLoader {
-                    shown: (bgRoot.backgroundWidgetsOptions.battery?.enable ?? false) && Battery.available
+                    shown: bgRoot._widgetEnabled("battery", false) && Battery.available
                     sourceComponent: BatteryWidget {
                         widgetIndex: 5
                         screenWidth: bgRoot.screen.width
@@ -1440,7 +1445,7 @@ Scope {
                         required property var modelData
                         required property int index
 
-                        readonly property bool shown: Config.customWidgetData?.[modelData.id]?.enable ?? true
+                        readonly property bool shown: Config.getNestedValue("background.widgets.custom." + modelData.id + ".enable", true)
                         active: shown
                         opacity: shown ? 1 : 0
                         visible: opacity > 0

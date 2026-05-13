@@ -99,23 +99,23 @@ AbstractBackgroundWidget {
         }
     }
 
-    property string clockStyle: Config.options?.background?.widgets?.clock?.style ?? "cookie"
+    property string clockStyle: Config.getNestedValue("background.widgets.clock.style", "cookie")
     property bool forceCenter: (GlobalStates.screenLocked && (Config.options?.lock?.centerClock ?? false))
     property bool wallpaperSafetyTriggered: false
     needsColText: clockStyle === "digital"
     visibleWhenLocked: true
 
     // --- Clock customization config ---
-    property string clockFontFamily: Config.options?.background?.widgets?.clock?.fontFamily ?? "Space Grotesk"
-    property string timeFormat: Config.options?.background?.widgets?.clock?.timeFormat ?? "system"
-    property bool showSeconds: Config.options?.background?.widgets?.clock?.showSeconds ?? false
-    property bool showDate: Config.options?.background?.widgets?.clock?.showDate ?? true
-    property string dateStyle: Config.options?.background?.widgets?.clock?.dateStyle ?? "long"
-    property int timeScale: Config.options?.background?.widgets?.clock?.timeScale ?? 100
-    property int dateScale: Config.options?.background?.widgets?.clock?.dateScale ?? 100
-    property bool showShadow: Config.options?.background?.widgets?.clock?.showShadow ?? true
-    property int digitalFontWeight: Config.options?.background?.widgets?.clock?.digital?.fontWeight ?? 600
-    property int digitalSpacing: Config.options?.background?.widgets?.clock?.digital?.spacing ?? 6
+    property string clockFontFamily: Config.getNestedValue("background.widgets.clock.fontFamily", "Space Grotesk")
+    property string timeFormat: Config.getNestedValue("background.widgets.clock.timeFormat", "system")
+    property bool showSeconds: Config.getNestedValue("background.widgets.clock.showSeconds", false)
+    property bool showDate: Config.getNestedValue("background.widgets.clock.showDate", true)
+    property string dateStyle: Config.getNestedValue("background.widgets.clock.dateStyle", "long")
+    property int timeScale: Config.getNestedValue("background.widgets.clock.timeScale", 100)
+    property int dateScale: Config.getNestedValue("background.widgets.clock.dateScale", 100)
+    property bool showShadow: Config.getNestedValue("background.widgets.clock.showShadow", true)
+    property int digitalFontWeight: Config.getNestedValue("background.widgets.clock.digital.fontWeight", 600)
+    property int digitalSpacing: Config.getNestedValue("background.widgets.clock.digital.spacing", 6)
 
     // Local clock with seconds precision when needed
     SystemClock {
@@ -179,7 +179,7 @@ AbstractBackgroundWidget {
 
     // Per-clock dim factor (0..1), independent from wallpaper dim
     property real dimFactor: {
-        const v = Config.options?.background?.widgets?.clock?.dim ?? 0;
+        const v = Config.getNestedValue("background.widgets.clock.dim", 0);
         const n = Number(v);
         return Math.max(0, Math.min(1, Number.isFinite(n) ? n / 100 : 0));
     }
@@ -216,8 +216,8 @@ AbstractBackgroundWidget {
                 }
                 FadeLoader {
                     anchors.horizontalCenter: parent.horizontalCenter
-                    shown: (Config.options?.background?.widgets?.clock?.quote?.enable ?? false)
-                        && (Config.options?.background?.widgets?.clock?.quote?.text ?? "") !== ""
+                    shown: (Config.getNestedValue("background.widgets.clock.quote.enable", false))
+                        && (Config.getNestedValue("background.widgets.clock.quote.text", "")) !== ""
                     sourceComponent: CookieQuote {}
                 }
             }
@@ -243,8 +243,8 @@ AbstractBackgroundWidget {
                 }
                 StyledText {
                     // Somehow gets fucked up if made a ClockText???
-                    visible: (Config.options?.background?.widgets?.clock?.quote?.enable ?? false)
-                        && (Config.options?.background?.widgets?.clock?.quote?.text ?? "").length > 0
+                    visible: (Config.getNestedValue("background.widgets.clock.quote.enable", false))
+                        && (Config.getNestedValue("background.widgets.clock.quote.text", "")).length > 0
                     Layout.fillWidth: true
                     horizontalAlignment: root.textHorizontalAlignment
                     font {
@@ -254,7 +254,7 @@ AbstractBackgroundWidget {
                     color: root.clockTextColor
                     style: root.showShadow ? Text.Raised : Text.Normal
                     styleColor: Appearance.colors.colShadow
-                    text: Config.options?.background?.widgets?.clock?.quote?.text ?? ""
+                    text: Config.getNestedValue("background.widgets.clock.quote.text", "")
                 }
             }
         }
@@ -329,7 +329,7 @@ AbstractBackgroundWidget {
         color: root.clockTextColor
         style: root.showShadow ? Text.Raised : Text.Normal
         styleColor: Appearance.colors.colShadow
-        animateChange: Config.options?.background?.widgets?.clock?.digital?.animateChange ?? false
+        animateChange: Config.getNestedValue("background.widgets.clock.digital.animateChange", false)
     }
     component ClockStatusText: Row {
         id: statusTextRow

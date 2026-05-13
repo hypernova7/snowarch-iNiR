@@ -63,7 +63,7 @@ AbstractBackgroundWidget {
     implicitWidth: widgetWidth
     implicitHeight: playerColumnLayout.implicitHeight
 
-    readonly property bool visualizerActive: (Config.options?.background?.widgets?.mediaControls?.enable ?? false)
+    readonly property bool visualizerActive: (Config.getNestedValue("background.widgets.mediaControls.enable", false))
         && (root.meaningfulPlayers?.length ?? 0) > 0
 
     CavaProcess {
@@ -75,7 +75,7 @@ AbstractBackgroundWidget {
 
     // Dim factor (0..1)
     property real dimFactor: {
-        const v = Config.options?.background?.widgets?.mediaControls?.dim ?? 0;
+        const v = Config.getNestedValue("background.widgets.mediaControls.dim", 0);
         const n = Number(v);
         return Math.max(0, Math.min(1, Number.isFinite(n) ? n / 100 : 0));
     }
@@ -83,7 +83,7 @@ AbstractBackgroundWidget {
     readonly property point widgetScreenPos: root.mapToItem(null, 0, 0)
     
     // Get selected preset component
-    readonly property string selectedPreset: Config.options?.background?.widgets?.mediaControls?.playerPreset ?? "full"
+    readonly property string selectedPreset: Config.getNestedValue("background.widgets.mediaControls.playerPreset", "full")
     readonly property Component presetComponent: {
         switch (selectedPreset) {
             case "compact": return compactPlayerComponent

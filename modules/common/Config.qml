@@ -9,6 +9,7 @@ Singleton {
     property string filePath: Directories.shellConfigPath
     property alias options: configOptionsJsonAdapter
     property bool ready: false
+    property int revision: 0
     property bool isSettingsProcess: (Quickshell.env("INIR_STANDALONE_WINDOW") ?? "") === "1"
     property int readWriteDelay: 50 // milliseconds
     property bool blockWrites: false
@@ -16,6 +17,10 @@ Singleton {
     property var customWidgetData: ({})
 
     signal configChanged
+
+    function _bumpRevision(): void {
+        root.revision = (root.revision + 1) % 2147483647;
+    }
 
     function flushWrites(): void {
         fileWriteTimer.stop();
@@ -100,6 +105,7 @@ Singleton {
         // Custom paths don't touch the adapter so onAdapterUpdated won't fire.
         // Restart the timer explicitly to cover both adapter and custom writes.
         fileWriteTimer.restart();
+        root._bumpRevision();
         root.configChanged();
     }
 
@@ -114,8 +120,38 @@ Singleton {
         }
         if (paths.length > 0) {
             fileWriteTimer.restart();
+            root._bumpRevision();
             root.configChanged();
         }
+    }
+
+    function getNestedValue(nestedKey, fallback) {
+        let keys = [];
+        if (Array.isArray(nestedKey)) {
+            keys = nestedKey;
+        } else if (typeof nestedKey === "string") {
+            keys = nestedKey.split(".");
+        } else {
+            return fallback;
+        }
+
+        if (keys.length === 0)
+            return fallback;
+
+        root.revision;
+        let obj = root.options;
+        let startIndex = 0;
+        if (keys.length >= 3 && keys[0] === "background" && keys[1] === "widgets" && keys[2] === "custom") {
+            obj = root.customWidgetData;
+            startIndex = 3;
+        }
+
+        for (let i = startIndex; i < keys.length; ++i) {
+            if (obj === undefined || obj === null)
+                return fallback;
+            obj = obj[keys[i]];
+        }
+        return (obj === undefined || obj === null) ? fallback : obj;
     }
 
     // Custom widget data lives outside the JsonAdapter (property var inside
@@ -242,6 +278,7 @@ Singleton {
             // Workaround: JsonAdapter doesn't populate property var inside nested JsonObjects.
             // Manually sync custom widget data from the raw JSON.
             root._syncVarProperties();
+            root._bumpRevision();
             root.ready = true;
         }
         onLoadFailed: error => {

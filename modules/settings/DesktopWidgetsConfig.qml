@@ -58,7 +58,7 @@ ContentPage {
         required property var configEntry
         Layout.fillWidth: true
 
-        readonly property string currentStrategy: configEntry?.placementStrategy ?? "free"
+        readonly property string currentStrategy: Config.getNestedValue(wzp.configPath + ".placementStrategy", configEntry?.placementStrategy ?? "free")
         readonly property bool isZone: root._zoneNames.indexOf(currentStrategy) >= 0
         visible: isZone
 
@@ -109,7 +109,7 @@ ContentPage {
         required property string defaultStrategy
         Layout.fillWidth: false
 
-        readonly property string currentStrategy: configEntry?.placementStrategy ?? defaultStrategy
+        readonly property string currentStrategy: Config.getNestedValue(wps.configPath + ".placementStrategy", configEntry?.placementStrategy ?? defaultStrategy)
 
         currentValue: root._resolvedMode(wps.currentStrategy)
         onSelected: newValue => root._applyMode(wps.configPath, newValue, wps.currentStrategy)
@@ -132,7 +132,7 @@ ContentPage {
             Item { Layout.fillWidth: true }
             StyledSpinBox {
                 from: 50; to: 200; stepSize: 10
-                value: wac.configEntry?.widgetScale ?? 100
+                value: Config.getNestedValue(wac.configPath + ".widgetScale", wac.configEntry?.widgetScale ?? 100)
                 onValueModified: Config.setNestedValue(wac.configPath + ".widgetScale", value)
             }
         }
@@ -143,7 +143,7 @@ ContentPage {
             Item { Layout.fillWidth: true }
             StyledSlider {
                 from: 10; to: 100; stepSize: 5
-                value: wac.configEntry?.widgetOpacity ?? 100
+                value: Config.getNestedValue(wac.configPath + ".widgetOpacity", wac.configEntry?.widgetOpacity ?? 100)
                 onMoved: Config.setNestedValue(wac.configPath + ".widgetOpacity", Math.round(value))
             }
         }
@@ -155,7 +155,7 @@ ContentPage {
             Item { Layout.fillWidth: true }
             StyledSlider {
                 from: 0; to: 100; stepSize: 5
-                value: wac.configEntry?.dim ?? wac.dimDefault
+                value: Config.getNestedValue(wac.configPath + ".dim", wac.configEntry?.dim ?? wac.dimDefault)
                 onMoved: Config.setNestedValue(wac.configPath + ".dim", Math.round(value))
             }
         }
@@ -167,7 +167,7 @@ ContentPage {
             Item { Layout.fillWidth: true }
             StyledSlider {
                 from: 0; to: 100; stepSize: 1
-                value: Math.round((wac.configEntry?.backgroundOpacity ?? 0.06) * 100)
+                value: Math.round(Config.getNestedValue(wac.configPath + ".backgroundOpacity", wac.configEntry?.backgroundOpacity ?? 0.06) * 100)
                 onMoved: Config.setNestedValue(wac.configPath + ".backgroundOpacity", Math.round(value) / 100)
             }
         }
@@ -179,7 +179,7 @@ ContentPage {
             Item { Layout.fillWidth: true }
             StyledSpinBox {
                 from: 0; to: 8; stepSize: 1
-                value: wac.configEntry?.borderWidth ?? 1
+                value: Config.getNestedValue(wac.configPath + ".borderWidth", wac.configEntry?.borderWidth ?? 1)
                 onValueModified: Config.setNestedValue(wac.configPath + ".borderWidth", value)
             }
         }
@@ -191,7 +191,7 @@ ContentPage {
             Item { Layout.fillWidth: true }
             StyledSlider {
                 from: 0; to: 100; stepSize: 1
-                value: Math.round((wac.configEntry?.borderOpacity ?? 0.08) * 100)
+                value: Math.round(Config.getNestedValue(wac.configPath + ".borderOpacity", wac.configEntry?.borderOpacity ?? 0.08) * 100)
                 onMoved: Config.setNestedValue(wac.configPath + ".borderOpacity", Math.round(value) / 100)
             }
         }
@@ -203,7 +203,7 @@ ContentPage {
             Item { Layout.fillWidth: true }
             StyledSpinBox {
                 from: -1; to: 50; stepSize: 1
-                value: wac.configEntry?.cornerRadius ?? -1
+                value: Config.getNestedValue(wac.configPath + ".cornerRadius", wac.configEntry?.cornerRadius ?? -1)
                 onValueModified: Config.setNestedValue(wac.configPath + ".cornerRadius", value)
                 StyledToolTip { text: Translation.tr("-1 = use theme default") }
             }
@@ -215,7 +215,7 @@ ContentPage {
             Item { Layout.fillWidth: true }
             ConfigSelectionArray {
                 Layout.fillWidth: false
-                currentValue: wac.configEntry?.colorMode ?? "auto"
+                currentValue: Config.getNestedValue(wac.configPath + ".colorMode", wac.configEntry?.colorMode ?? "auto")
                 onSelected: newValue => Config.setNestedValue(wac.configPath + ".colorMode", newValue)
                 options: root._colorModeOptions()
             }
@@ -252,13 +252,13 @@ ContentPage {
                     text: Translation.tr("Snap to grid")
                     autoToggle: false
 
-                    checked: Config.options?.background?.widgets?.editGrid?.snap ?? true
+                    checked: Config.getNestedValue("background.widgets.editGrid.snap", true)
                     onToggledByUser: checked => Config.setNestedValue("background.widgets.editGrid.snap", checked)
                 }
                 Item { Layout.fillWidth: true }
                 StyledSpinBox {
                     from: 8; to: 128; stepSize: 8
-                    value: Config.options?.background?.widgets?.editGrid?.size ?? 32
+                    value: Config.getNestedValue("background.widgets.editGrid.size", 32)
                     onValueModified: Config.setNestedValue("background.widgets.editGrid.size", value)
                     StyledToolTip {
                         text: Translation.tr("Grid cell size in pixels")
@@ -276,7 +276,7 @@ ContentPage {
         icon: "schedule"
         title: Translation.tr("Clock")
 
-        readonly property string _clockStyle: Config.options?.background?.widgets?.clock?.style ?? "cookie"
+        readonly property string _clockStyle: Config.getNestedValue("background.widgets.clock.style", "cookie")
 
         SettingsGroup {
             // Enable + placement
@@ -288,20 +288,20 @@ ContentPage {
                     text: Translation.tr("Enable")
                     autoToggle: false
 
-                    checked: Config.options?.background?.widgets?.clock?.enable ?? true
+                    checked: Config.getNestedValue("background.widgets.clock.enable", true)
                     onToggledByUser: checked => Config.setNestedValue("background.widgets.clock.enable", checked)
                 }
                 Item { Layout.fillWidth: true }
                 WidgetPlacementSelector {
                     configPath: "background.widgets.clock"
-                    configEntry: Config.options?.background?.widgets?.clock
+                    configEntry: Config.getNestedValue("background.widgets.clock", ({}))
                     defaultStrategy: "leastBusy"
                 }
             }
 
             WidgetZonePicker {
                 configPath: "background.widgets.clock"
-                configEntry: Config.options?.background?.widgets?.clock
+                configEntry: Config.getNestedValue("background.widgets.clock", ({}))
             }
 
             // Style selector
@@ -309,7 +309,7 @@ ContentPage {
                 title: Translation.tr("Clock style")
 
                 ConfigSelectionArray {
-                    currentValue: Config.options?.background?.widgets?.clock?.style ?? "cookie"
+                    currentValue: Config.getNestedValue("background.widgets.clock.style", "cookie")
                     onSelected: newValue => Config.setNestedValue("background.widgets.clock.style", newValue)
                     options: [
                         { displayName: Translation.tr("Digital"), icon: "timer", value: "digital" },
@@ -325,7 +325,7 @@ ContentPage {
 
                 ConfigSelectionArray {
                     Layout.fillWidth: true
-                    currentValue: Config.options?.background?.widgets?.clock?.timeFormat ?? "system"
+                    currentValue: Config.getNestedValue("background.widgets.clock.timeFormat", "system")
                     onSelected: newValue => Config.setNestedValue("background.widgets.clock.timeFormat", newValue)
                     options: [
                         { displayName: Translation.tr("System"), icon: "settings", value: "system" },
@@ -341,7 +341,7 @@ ContentPage {
 
                 ConfigSelectionArray {
                     Layout.fillWidth: true
-                    currentValue: Config.options?.background?.widgets?.clock?.dateStyle ?? "long"
+                    currentValue: Config.getNestedValue("background.widgets.clock.dateStyle", "long")
                     onSelected: newValue => Config.setNestedValue("background.widgets.clock.dateStyle", newValue)
                     options: [
                         { displayName: Translation.tr("Long"), icon: "calendar_month", value: "long" },
@@ -358,7 +358,7 @@ ContentPage {
 
                 ConfigSelectionArray {
                     Layout.fillWidth: true
-                    currentValue: Config.options?.background?.widgets?.clock?.digital?.preset ?? "default"
+                    currentValue: Config.getNestedValue("background.widgets.clock.digital.preset", "default")
                     onSelected: newValue => {
                         Config.setNestedValue("background.widgets.clock.digital.preset", newValue);
                         if (newValue === "default") {
@@ -396,7 +396,7 @@ ContentPage {
                         text: Translation.tr("Seconds")
                         autoToggle: false
 
-                        checked: Config.options?.background?.widgets?.clock?.showSeconds ?? false
+                        checked: Config.getNestedValue("background.widgets.clock.showSeconds", false)
                         onToggledByUser: checked => Config.setNestedValue("background.widgets.clock.showSeconds", checked)
                     }
                     SettingsSwitch {
@@ -405,7 +405,7 @@ ContentPage {
                         text: Translation.tr("Date")
                         autoToggle: false
 
-                        checked: Config.options?.background?.widgets?.clock?.showDate ?? true
+                        checked: Config.getNestedValue("background.widgets.clock.showDate", true)
                         onToggledByUser: checked => Config.setNestedValue("background.widgets.clock.showDate", checked)
                     }
                 }
@@ -417,7 +417,7 @@ ContentPage {
                         text: Translation.tr("Shadow")
                         autoToggle: false
 
-                        checked: Config.options?.background?.widgets?.clock?.showShadow ?? true
+                        checked: Config.getNestedValue("background.widgets.clock.showShadow", true)
                         onToggledByUser: checked => Config.setNestedValue("background.widgets.clock.showShadow", checked)
                     }
                     SettingsSwitch {
@@ -426,7 +426,7 @@ ContentPage {
                         text: Translation.tr("Animate")
                         autoToggle: false
 
-                        checked: Config.options?.background?.widgets?.clock?.digital?.animateChange ?? true
+                        checked: Config.getNestedValue("background.widgets.clock.digital.animateChange", true)
                         onToggledByUser: checked => Config.setNestedValue("background.widgets.clock.digital.animateChange", checked)
                     }
                 }
@@ -437,7 +437,7 @@ ContentPage {
                     Item { Layout.fillWidth: true }
                     StyledSpinBox {
                         from: 100; to: 900; stepSize: 100
-                        value: Config.options?.background?.widgets?.clock?.digital?.fontWeight ?? 600
+                        value: Config.getNestedValue("background.widgets.clock.digital.fontWeight", 600)
                         onValueModified: Config.setNestedValue("background.widgets.clock.digital.fontWeight", value)
                     }
                 }
@@ -448,7 +448,7 @@ ContentPage {
                     Item { Layout.fillWidth: true }
                     StyledSpinBox {
                         from: 0; to: 20; stepSize: 1
-                        value: Config.options?.background?.widgets?.clock?.digital?.spacing ?? 6
+                        value: Config.getNestedValue("background.widgets.clock.digital.spacing", 6)
                         onValueModified: Config.setNestedValue("background.widgets.clock.digital.spacing", value)
                     }
                 }
@@ -459,7 +459,7 @@ ContentPage {
                     Item { Layout.fillWidth: true }
                     StyledSpinBox {
                         from: 50; to: 200; stepSize: 5
-                        value: Config.options?.background?.widgets?.clock?.timeScale ?? 100
+                        value: Config.getNestedValue("background.widgets.clock.timeScale", 100)
                         onValueModified: Config.setNestedValue("background.widgets.clock.timeScale", value)
                     }
                 }
@@ -470,7 +470,7 @@ ContentPage {
                     Item { Layout.fillWidth: true }
                     StyledSpinBox {
                         from: 50; to: 200; stepSize: 5
-                        value: Config.options?.background?.widgets?.clock?.dateScale ?? 100
+                        value: Config.getNestedValue("background.widgets.clock.dateScale", 100)
                         onValueModified: Config.setNestedValue("background.widgets.clock.dateScale", value)
                     }
                 }
@@ -478,7 +478,7 @@ ContentPage {
                 FontSelector {
                     label: Translation.tr("Clock font")
                     icon: "font_download"
-                    selectedFont: Config.options?.background?.widgets?.clock?.fontFamily ?? "Space Grotesk"
+                    selectedFont: Config.getNestedValue("background.widgets.clock.fontFamily", "Space Grotesk")
                     onSelectedFontChanged: Config.setNestedValue("background.widgets.clock.fontFamily", selectedFont)
                 }
             }
@@ -492,15 +492,15 @@ ContentPage {
                     text: Translation.tr("Show quote")
                     autoToggle: false
 
-                    checked: Config.options?.background?.widgets?.clock?.quote?.enable ?? false
+                    checked: Config.getNestedValue("background.widgets.clock.quote.enable", false)
                     onToggledByUser: checked => Config.setNestedValue("background.widgets.clock.quote.enable", checked)
                 }
 
                 MaterialTextField {
-                    visible: Config.options?.background?.widgets?.clock?.quote?.enable ?? false
+                    visible: Config.getNestedValue("background.widgets.clock.quote.enable", false)
                     Layout.fillWidth: true
                     placeholderText: Translation.tr("Enter a quote or message...")
-                    text: Config.options?.background?.widgets?.clock?.quote?.text ?? ""
+                    text: Config.getNestedValue("background.widgets.clock.quote.text", "")
                     onAccepted: Config.setNestedValue("background.widgets.clock.quote.text", text)
                     onEditingFinished: Config.setNestedValue("background.widgets.clock.quote.text", text)
                 }
@@ -513,7 +513,7 @@ ContentPage {
 
                 ConfigSelectionArray {
                     Layout.fillWidth: true
-                    currentValue: Config.options?.background?.widgets?.clock?.cookie?.preset ?? "default"
+                    currentValue: Config.getNestedValue("background.widgets.clock.cookie.preset", "default")
                     onSelected: newValue => {
                         Config.setNestedValue("background.widgets.clock.cookie.preset", newValue);
                         if (newValue === "default") {
@@ -557,7 +557,7 @@ ContentPage {
                     Item { Layout.fillWidth: true }
                     StyledSpinBox {
                         from: 100; to: 400; stepSize: 10
-                        value: Config.options?.background?.widgets?.clock?.cookie?.size ?? 230
+                        value: Config.getNestedValue("background.widgets.clock.cookie.size", 230)
                         onValueModified: Config.setNestedValue("background.widgets.clock.cookie.size", value)
                     }
                 }
@@ -567,7 +567,7 @@ ContentPage {
                     text: Translation.tr("Sine wave shape")
                     autoToggle: false
 
-                    checked: Config.options?.background?.widgets?.clock?.cookie?.useSineCookie ?? false
+                    checked: Config.getNestedValue("background.widgets.clock.cookie.useSineCookie", false)
                     onToggledByUser: checked => Config.setNestedValue("background.widgets.clock.cookie.useSineCookie", checked)
                     StyledToolTip { text: Translation.tr("Use smooth sine-wave edges instead of rounded polygon") }
                 }
@@ -578,7 +578,7 @@ ContentPage {
                     Item { Layout.fillWidth: true }
                     StyledSpinBox {
                         from: 3; to: 30; stepSize: 1
-                        value: Config.options?.background?.widgets?.clock?.cookie?.sides ?? 15
+                        value: Config.getNestedValue("background.widgets.clock.cookie.sides", 15)
                         onValueModified: Config.setNestedValue("background.widgets.clock.cookie.sides", value)
                     }
                 }
@@ -588,7 +588,7 @@ ContentPage {
                     text: Translation.tr("Constant rotation")
                     autoToggle: false
 
-                    checked: Config.options?.background?.widgets?.clock?.cookie?.constantlyRotate ?? false
+                    checked: Config.getNestedValue("background.widgets.clock.cookie.constantlyRotate", false)
                     onToggledByUser: checked => Config.setNestedValue("background.widgets.clock.cookie.constantlyRotate", checked)
                 }
             }
@@ -599,7 +599,7 @@ ContentPage {
 
                 ConfigSelectionArray {
                     Layout.fillWidth: true
-                    currentValue: Config.options?.background?.widgets?.clock?.cookie?.dialNumberStyle ?? "full"
+                    currentValue: Config.getNestedValue("background.widgets.clock.cookie.dialNumberStyle", "full")
                     onSelected: newValue => Config.setNestedValue("background.widgets.clock.cookie.dialNumberStyle", newValue)
                     options: [
                         { displayName: Translation.tr("Lines"), icon: "linear_scale", value: "full" },
@@ -617,7 +617,7 @@ ContentPage {
                         text: Translation.tr("Hour marks")
                         autoToggle: false
 
-                        checked: Config.options?.background?.widgets?.clock?.cookie?.hourMarks ?? false
+                        checked: Config.getNestedValue("background.widgets.clock.cookie.hourMarks", false)
                         onToggledByUser: checked => Config.setNestedValue("background.widgets.clock.cookie.hourMarks", checked)
                     }
                     SettingsSwitch {
@@ -626,7 +626,7 @@ ContentPage {
                         text: Translation.tr("Time column")
                         autoToggle: false
 
-                        checked: Config.options?.background?.widgets?.clock?.cookie?.timeIndicators ?? false
+                        checked: Config.getNestedValue("background.widgets.clock.cookie.timeIndicators", false)
                         onToggledByUser: checked => Config.setNestedValue("background.widgets.clock.cookie.timeIndicators", checked)
                     }
                 }
@@ -642,7 +642,7 @@ ContentPage {
                     Item { Layout.fillWidth: true }
                     ConfigSelectionArray {
                         Layout.fillWidth: false
-                        currentValue: Config.options?.background?.widgets?.clock?.cookie?.hourHandStyle ?? "hollow"
+                        currentValue: Config.getNestedValue("background.widgets.clock.cookie.hourHandStyle", "hollow")
                         onSelected: newValue => Config.setNestedValue("background.widgets.clock.cookie.hourHandStyle", newValue)
                         options: [
                             { displayName: Translation.tr("Fill"), icon: "rectangle", value: "fill" },
@@ -659,7 +659,7 @@ ContentPage {
                     Item { Layout.fillWidth: true }
                     ConfigSelectionArray {
                         Layout.fillWidth: false
-                        currentValue: Config.options?.background?.widgets?.clock?.cookie?.minuteHandStyle ?? "hide"
+                        currentValue: Config.getNestedValue("background.widgets.clock.cookie.minuteHandStyle", "hide")
                         onSelected: newValue => Config.setNestedValue("background.widgets.clock.cookie.minuteHandStyle", newValue)
                         options: [
                             { displayName: Translation.tr("Bold"), icon: "rectangle", value: "bold" },
@@ -676,7 +676,7 @@ ContentPage {
                     Item { Layout.fillWidth: true }
                     ConfigSelectionArray {
                         Layout.fillWidth: false
-                        currentValue: Config.options?.background?.widgets?.clock?.cookie?.secondHandStyle ?? "hide"
+                        currentValue: Config.getNestedValue("background.widgets.clock.cookie.secondHandStyle", "hide")
                         onSelected: newValue => Config.setNestedValue("background.widgets.clock.cookie.secondHandStyle", newValue)
                         options: [
                             { displayName: Translation.tr("Classic"), icon: "straighten", value: "classic" },
@@ -694,7 +694,7 @@ ContentPage {
 
                 ConfigSelectionArray {
                     Layout.fillWidth: true
-                    currentValue: Config.options?.background?.widgets?.clock?.cookie?.dateStyle ?? "bubble"
+                    currentValue: Config.getNestedValue("background.widgets.clock.cookie.dateStyle", "bubble")
                     onSelected: newValue => Config.setNestedValue("background.widgets.clock.cookie.dateStyle", newValue)
                     options: [
                         { displayName: Translation.tr("Bubble"), icon: "chat_bubble", value: "bubble" },
@@ -714,7 +714,7 @@ ContentPage {
                     text: Translation.tr("Auto-style from wallpaper")
                     autoToggle: false
 
-                    checked: Config.options?.background?.widgets?.clock?.cookie?.aiStyling ?? false
+                    checked: Config.getNestedValue("background.widgets.clock.cookie.aiStyling", false)
                     onToggledByUser: checked => Config.setNestedValue("background.widgets.clock.cookie.aiStyling", checked)
                     StyledToolTip { text: Translation.tr("Automatically adjust cookie clock style based on wallpaper category") }
                 }
@@ -722,7 +722,7 @@ ContentPage {
 
             WidgetAppearanceControls {
                 configPath: "background.widgets.clock"
-                configEntry: Config.options?.background?.widgets?.clock
+                configEntry: Config.getNestedValue("background.widgets.clock", ({}))
                 dimDefault: 55
                 hasCardControls: true
             }
@@ -793,20 +793,20 @@ ContentPage {
                     text: Translation.tr("Enable")
                     autoToggle: false
 
-                    checked: Config.options?.background?.widgets?.weather?.enable ?? true
+                    checked: Config.getNestedValue("background.widgets.weather.enable", true)
                     onToggledByUser: checked => Config.setNestedValue("background.widgets.weather.enable", checked)
                 }
                 Item { Layout.fillWidth: true }
                 WidgetPlacementSelector {
                     configPath: "background.widgets.weather"
-                    configEntry: Config.options?.background?.widgets?.weather
+                    configEntry: Config.getNestedValue("background.widgets.weather", ({}))
                     defaultStrategy: "leastBusy"
                 }
             }
 
             WidgetZonePicker {
                 configPath: "background.widgets.weather"
-                configEntry: Config.options?.background?.widgets?.weather
+                configEntry: Config.getNestedValue("background.widgets.weather", ({}))
             }
 
             ContentSubsection {
@@ -814,7 +814,7 @@ ContentPage {
 
                 ConfigSelectionArray {
                     Layout.fillWidth: true
-                    currentValue: Config.options?.background?.widgets?.weather?.preset ?? "default"
+                    currentValue: Config.getNestedValue("background.widgets.weather.preset", "default")
                     onSelected: newValue => {
                         Config.setNestedValue("background.widgets.weather.preset", newValue);
                         if (newValue === "default") {
@@ -863,7 +863,7 @@ ContentPage {
                         text: Translation.tr("Temperature")
                         autoToggle: false
 
-                        checked: Config.options?.background?.widgets?.weather?.showTemp ?? true
+                        checked: Config.getNestedValue("background.widgets.weather.showTemp", true)
                         onToggledByUser: checked => Config.setNestedValue("background.widgets.weather.showTemp", checked)
                     }
                     SettingsSwitch {
@@ -872,7 +872,7 @@ ContentPage {
                         text: Translation.tr("Icon")
                         autoToggle: false
 
-                        checked: Config.options?.background?.widgets?.weather?.showIcon ?? true
+                        checked: Config.getNestedValue("background.widgets.weather.showIcon", true)
                         onToggledByUser: checked => Config.setNestedValue("background.widgets.weather.showIcon", checked)
                     }
                 }
@@ -881,7 +881,7 @@ ContentPage {
                     text: Translation.tr("Condition text")
                     autoToggle: false
 
-                    checked: Config.options?.background?.widgets?.weather?.showCondition ?? false
+                    checked: Config.getNestedValue("background.widgets.weather.showCondition", false)
                     onToggledByUser: checked => Config.setNestedValue("background.widgets.weather.showCondition", checked)
                 }
             }
@@ -895,7 +895,7 @@ ContentPage {
                     Item { Layout.fillWidth: true }
                     StyledSpinBox {
                         from: 80; to: 400; stepSize: 10
-                        value: Config.options?.background?.widgets?.weather?.size ?? 200
+                        value: Config.getNestedValue("background.widgets.weather.size", 200)
                         onValueModified: Config.setNestedValue("background.widgets.weather.size", value)
                     }
                 }
@@ -905,7 +905,7 @@ ContentPage {
                     Item { Layout.fillWidth: true }
                     StyledSpinBox {
                         from: 20; to: 200; stepSize: 5
-                        value: Config.options?.background?.widgets?.weather?.tempSize ?? 80
+                        value: Config.getNestedValue("background.widgets.weather.tempSize", 80)
                         onValueModified: Config.setNestedValue("background.widgets.weather.tempSize", value)
                     }
                 }
@@ -915,7 +915,7 @@ ContentPage {
                     Item { Layout.fillWidth: true }
                     StyledSpinBox {
                         from: 20; to: 200; stepSize: 5
-                        value: Config.options?.background?.widgets?.weather?.iconSize ?? 80
+                        value: Config.getNestedValue("background.widgets.weather.iconSize", 80)
                         onValueModified: Config.setNestedValue("background.widgets.weather.iconSize", value)
                     }
                 }
@@ -925,7 +925,7 @@ ContentPage {
                     Item { Layout.fillWidth: true }
                     StyledSpinBox {
                         from: 0; to: 60; stepSize: 2
-                        value: Config.options?.background?.widgets?.weather?.padding ?? 20
+                        value: Config.getNestedValue("background.widgets.weather.padding", 20)
                         onValueModified: Config.setNestedValue("background.widgets.weather.padding", value)
                     }
                 }
@@ -935,18 +935,18 @@ ContentPage {
                     Item { Layout.fillWidth: true }
                     StyledSpinBox {
                         from: 100; to: 900; stepSize: 100
-                        value: Config.options?.background?.widgets?.weather?.tempFontWeight ?? 500
+                        value: Config.getNestedValue("background.widgets.weather.tempFontWeight", 500)
                         onValueModified: Config.setNestedValue("background.widgets.weather.tempFontWeight", value)
                     }
                 }
                 ConfigRow {
-                    visible: Config.options?.background?.widgets?.weather?.showCondition ?? false
+                    visible: Config.getNestedValue("background.widgets.weather.showCondition", false)
                     Layout.fillWidth: true
                     StyledText { text: Translation.tr("Condition opacity"); color: Appearance.colors.colOnLayer1 }
                     Item { Layout.fillWidth: true }
                     StyledSlider {
                         from: 0; to: 1; stepSize: 0.05
-                        value: Config.options?.background?.widgets?.weather?.conditionOpacity ?? 0.7
+                        value: Config.getNestedValue("background.widgets.weather.conditionOpacity", 0.7)
                         onMoved: Config.setNestedValue("background.widgets.weather.conditionOpacity", Math.round(value * 100) / 100)
                     }
                 }
@@ -954,7 +954,7 @@ ContentPage {
 
             WidgetAppearanceControls {
                 configPath: "background.widgets.weather"
-                configEntry: Config.options?.background?.widgets?.weather
+                configEntry: Config.getNestedValue("background.widgets.weather", ({}))
             }
 
             RippleButton {
@@ -999,20 +999,20 @@ ContentPage {
                     text: Translation.tr("Enable")
                     autoToggle: false
 
-                    checked: Config.options?.background?.widgets?.mediaControls?.enable ?? true
+                    checked: Config.getNestedValue("background.widgets.mediaControls.enable", true)
                     onToggledByUser: checked => Config.setNestedValue("background.widgets.mediaControls.enable", checked)
                 }
                 Item { Layout.fillWidth: true }
                 WidgetPlacementSelector {
                     configPath: "background.widgets.mediaControls"
-                    configEntry: Config.options?.background?.widgets?.mediaControls
+                    configEntry: Config.getNestedValue("background.widgets.mediaControls", ({}))
                     defaultStrategy: "leastBusy"
                 }
             }
 
             WidgetZonePicker {
                 configPath: "background.widgets.mediaControls"
-                configEntry: Config.options?.background?.widgets?.mediaControls
+                configEntry: Config.getNestedValue("background.widgets.mediaControls", ({}))
             }
 
             ContentSubsection {
@@ -1020,7 +1020,7 @@ ContentPage {
 
                 ConfigSelectionArray {
                     Layout.fillWidth: true
-                    currentValue: Config.options?.background?.widgets?.mediaControls?.playerPreset ?? "full"
+                    currentValue: Config.getNestedValue("background.widgets.mediaControls.playerPreset", "full")
                     onSelected: newValue => Config.setNestedValue("background.widgets.mediaControls.playerPreset", newValue)
                     options: [
                         { displayName: Translation.tr("Full"), icon: "featured_video", value: "full" },
@@ -1035,7 +1035,7 @@ ContentPage {
 
             WidgetAppearanceControls {
                 configPath: "background.widgets.mediaControls"
-                configEntry: Config.options?.background?.widgets?.mediaControls
+                configEntry: Config.getNestedValue("background.widgets.mediaControls", ({}))
             }
 
             RippleButton {
@@ -1071,7 +1071,7 @@ ContentPage {
                     text: Translation.tr("Enable")
                     autoToggle: false
 
-                    checked: Config.options?.background?.widgets?.visualizer?.enable ?? false
+                    checked: Config.getNestedValue("background.widgets.visualizer.enable", false)
                     onToggledByUser: checked => Config.setNestedValue("background.widgets.visualizer.enable", checked)
                     StyledToolTip {
                         text: Translation.tr("Audio visualizer widget on the desktop")
@@ -1080,14 +1080,14 @@ ContentPage {
                 Item { Layout.fillWidth: true }
                 WidgetPlacementSelector {
                     configPath: "background.widgets.visualizer"
-                    configEntry: Config.options?.background?.widgets?.visualizer
+                    configEntry: Config.getNestedValue("background.widgets.visualizer", ({}))
                     defaultStrategy: "free"
                 }
             }
 
             WidgetZonePicker {
                 configPath: "background.widgets.visualizer"
-                configEntry: Config.options?.background?.widgets?.visualizer
+                configEntry: Config.getNestedValue("background.widgets.visualizer", ({}))
             }
 
             ContentSubsection {
@@ -1095,7 +1095,7 @@ ContentPage {
 
                 ConfigSelectionArray {
                     Layout.fillWidth: true
-                    currentValue: Config.options?.background?.widgets?.visualizer?.preset ?? "default"
+                    currentValue: Config.getNestedValue("background.widgets.visualizer.preset", "default")
                     onSelected: newValue => {
                         Config.setNestedValue("background.widgets.visualizer.preset", newValue);
                         if (newValue === "default") {
@@ -1146,7 +1146,7 @@ ContentPage {
                     Item { Layout.fillWidth: true }
                     StyledSpinBox {
                         from: 8; to: 128; stepSize: 4
-                        value: Config.options?.background?.widgets?.visualizer?.barCount ?? 48
+                        value: Config.getNestedValue("background.widgets.visualizer.barCount", 48)
                         onValueModified: Config.setNestedValue("background.widgets.visualizer.barCount", value)
                     }
                 }
@@ -1157,7 +1157,7 @@ ContentPage {
                     Item { Layout.fillWidth: true }
                     StyledSpinBox {
                         from: 0; to: 8; stepSize: 1
-                        value: Config.options?.background?.widgets?.visualizer?.barSpacing ?? 2
+                        value: Config.getNestedValue("background.widgets.visualizer.barSpacing", 2)
                         onValueModified: Config.setNestedValue("background.widgets.visualizer.barSpacing", value)
                     }
                 }
@@ -1168,7 +1168,7 @@ ContentPage {
                     Item { Layout.fillWidth: true }
                     StyledSpinBox {
                         from: 0; to: 16; stepSize: 1
-                        value: Config.options?.background?.widgets?.visualizer?.barRadius ?? 2
+                        value: Config.getNestedValue("background.widgets.visualizer.barRadius", 2)
                         onValueModified: Config.setNestedValue("background.widgets.visualizer.barRadius", value)
                     }
                 }
@@ -1179,7 +1179,7 @@ ContentPage {
                     Item { Layout.fillWidth: true }
                     StyledSpinBox {
                         from: 0; to: 16; stepSize: 1
-                        value: Config.options?.background?.widgets?.visualizer?.barMinHeight ?? 1
+                        value: Config.getNestedValue("background.widgets.visualizer.barMinHeight", 1)
                         onValueModified: Config.setNestedValue("background.widgets.visualizer.barMinHeight", value)
                     }
                 }
@@ -1194,7 +1194,7 @@ ContentPage {
                     Item { Layout.fillWidth: true }
                     StyledSpinBox {
                         from: 100; to: 800; stepSize: 20
-                        value: Config.options?.background?.widgets?.visualizer?.contentWidth ?? 304
+                        value: Config.getNestedValue("background.widgets.visualizer.contentWidth", 304)
                         onValueModified: Config.setNestedValue("background.widgets.visualizer.contentWidth", value)
                     }
                 }
@@ -1204,7 +1204,7 @@ ContentPage {
                     Item { Layout.fillWidth: true }
                     StyledSpinBox {
                         from: 40; to: 400; stepSize: 10
-                        value: Config.options?.background?.widgets?.visualizer?.contentHeight ?? 104
+                        value: Config.getNestedValue("background.widgets.visualizer.contentHeight", 104)
                         onValueModified: Config.setNestedValue("background.widgets.visualizer.contentHeight", value)
                     }
                 }
@@ -1212,7 +1212,7 @@ ContentPage {
 
             WidgetAppearanceControls {
                 configPath: "background.widgets.visualizer"
-                configEntry: Config.options?.background?.widgets?.visualizer
+                configEntry: Config.getNestedValue("background.widgets.visualizer", ({}))
                 hasCardControls: true
             }
 
@@ -1261,7 +1261,7 @@ ContentPage {
                     text: Translation.tr("Enable")
                     autoToggle: false
 
-                    checked: Config.options?.background?.widgets?.systemMonitor?.enable ?? false
+                    checked: Config.getNestedValue("background.widgets.systemMonitor.enable", false)
                     onToggledByUser: checked => Config.setNestedValue("background.widgets.systemMonitor.enable", checked)
                     StyledToolTip {
                         text: Translation.tr("Show CPU, RAM, and GPU usage on the desktop")
@@ -1270,14 +1270,14 @@ ContentPage {
                 Item { Layout.fillWidth: true }
                 WidgetPlacementSelector {
                     configPath: "background.widgets.systemMonitor"
-                    configEntry: Config.options?.background?.widgets?.systemMonitor
+                    configEntry: Config.getNestedValue("background.widgets.systemMonitor", ({}))
                     defaultStrategy: "free"
                 }
             }
 
             WidgetZonePicker {
                 configPath: "background.widgets.systemMonitor"
-                configEntry: Config.options?.background?.widgets?.systemMonitor
+                configEntry: Config.getNestedValue("background.widgets.systemMonitor", ({}))
             }
 
             ContentSubsection {
@@ -1285,7 +1285,7 @@ ContentPage {
 
                 ConfigSelectionArray {
                     Layout.fillWidth: true
-                    currentValue: Config.options?.background?.widgets?.systemMonitor?.preset ?? "default"
+                    currentValue: Config.getNestedValue("background.widgets.systemMonitor.preset", "default")
                     onSelected: newValue => {
                         Config.setNestedValue("background.widgets.systemMonitor.preset", newValue);
                         if (newValue === "default") {
@@ -1316,7 +1316,7 @@ ContentPage {
 
                 ConfigSelectionArray {
                     Layout.fillWidth: true
-                    currentValue: Config.options?.background?.widgets?.systemMonitor?.displayMode ?? "bars"
+                    currentValue: Config.getNestedValue("background.widgets.systemMonitor.displayMode", "bars")
                     onSelected: newValue => Config.setNestedValue("background.widgets.systemMonitor.displayMode", newValue)
                     options: [
                         { displayName: Translation.tr("Bars"), icon: "bar_chart", value: "bars" },
@@ -1338,7 +1338,7 @@ ContentPage {
                         text: Translation.tr("CPU")
                         autoToggle: false
 
-                        checked: Config.options?.background?.widgets?.systemMonitor?.showCpu ?? true
+                        checked: Config.getNestedValue("background.widgets.systemMonitor.showCpu", true)
                         onToggledByUser: checked => Config.setNestedValue("background.widgets.systemMonitor.showCpu", checked)
                     }
                     SettingsSwitch {
@@ -1347,7 +1347,7 @@ ContentPage {
                         text: Translation.tr("Memory")
                         autoToggle: false
 
-                        checked: Config.options?.background?.widgets?.systemMonitor?.showMemory ?? true
+                        checked: Config.getNestedValue("background.widgets.systemMonitor.showMemory", true)
                         onToggledByUser: checked => Config.setNestedValue("background.widgets.systemMonitor.showMemory", checked)
                     }
                     SettingsSwitch {
@@ -1356,7 +1356,7 @@ ContentPage {
                         text: Translation.tr("GPU")
                         autoToggle: false
 
-                        checked: Config.options?.background?.widgets?.systemMonitor?.showGpu ?? true
+                        checked: Config.getNestedValue("background.widgets.systemMonitor.showGpu", true)
                         onToggledByUser: checked => Config.setNestedValue("background.widgets.systemMonitor.showGpu", checked)
                     }
                 }
@@ -1366,7 +1366,7 @@ ContentPage {
                     text: Translation.tr("Show labels and percentages")
                     autoToggle: false
 
-                    checked: Config.options?.background?.widgets?.systemMonitor?.showLabels ?? true
+                    checked: Config.getNestedValue("background.widgets.systemMonitor.showLabels", true)
                     onToggledByUser: checked => Config.setNestedValue("background.widgets.systemMonitor.showLabels", checked)
                 }
             }
@@ -1380,7 +1380,7 @@ ContentPage {
                     Item { Layout.fillWidth: true }
                     StyledSpinBox {
                         from: 120; to: 800; stepSize: 20
-                        value: Config.options?.background?.widgets?.systemMonitor?.contentWidth ?? 320
+                        value: Config.getNestedValue("background.widgets.systemMonitor.contentWidth", 320)
                         onValueModified: Config.setNestedValue("background.widgets.systemMonitor.contentWidth", value)
                     }
                 }
@@ -1390,7 +1390,7 @@ ContentPage {
                     Item { Layout.fillWidth: true }
                     StyledSpinBox {
                         from: 40; to: 400; stepSize: 10
-                        value: Config.options?.background?.widgets?.systemMonitor?.contentHeight ?? 120
+                        value: Config.getNestedValue("background.widgets.systemMonitor.contentHeight", 120)
                         onValueModified: Config.setNestedValue("background.widgets.systemMonitor.contentHeight", value)
                     }
                 }
@@ -1405,7 +1405,7 @@ ContentPage {
                     Item { Layout.fillWidth: true }
                     StyledSlider {
                         from: 0; to: 0.5; stepSize: 0.02
-                        value: Config.options?.background?.widgets?.systemMonitor?.trackAlpha ?? 0.08
+                        value: Config.getNestedValue("background.widgets.systemMonitor.trackAlpha", 0.08)
                         onMoved: Config.setNestedValue("background.widgets.systemMonitor.trackAlpha", Math.round(value * 100) / 100)
                     }
                 }
@@ -1415,18 +1415,18 @@ ContentPage {
                     Item { Layout.fillWidth: true }
                     StyledSlider {
                         from: 0.1; to: 1; stepSize: 0.05
-                        value: Config.options?.background?.widgets?.systemMonitor?.fillOpacity ?? 0.7
+                        value: Config.getNestedValue("background.widgets.systemMonitor.fillOpacity", 0.7)
                         onMoved: Config.setNestedValue("background.widgets.systemMonitor.fillOpacity", Math.round(value * 100) / 100)
                     }
                 }
                 ConfigRow {
-                    visible: (Config.options?.background?.widgets?.systemMonitor?.displayMode ?? "bars") === "graph"
+                    visible: (Config.getNestedValue("background.widgets.systemMonitor.displayMode", "bars")) === "graph"
                     Layout.fillWidth: true
                     StyledText { text: Translation.tr("Graph fill opacity"); color: Appearance.colors.colOnLayer1 }
                     Item { Layout.fillWidth: true }
                     StyledSlider {
                         from: 0; to: 1; stepSize: 0.05
-                        value: Config.options?.background?.widgets?.systemMonitor?.graphFillOpacity ?? 0.3
+                        value: Config.getNestedValue("background.widgets.systemMonitor.graphFillOpacity", 0.3)
                         onMoved: Config.setNestedValue("background.widgets.systemMonitor.graphFillOpacity", Math.round(value * 100) / 100)
                     }
                 }
@@ -1434,7 +1434,7 @@ ContentPage {
 
             WidgetAppearanceControls {
                 configPath: "background.widgets.systemMonitor"
-                configEntry: Config.options?.background?.widgets?.systemMonitor
+                configEntry: Config.getNestedValue("background.widgets.systemMonitor", ({}))
                 hasCardControls: true
             }
 
@@ -1496,7 +1496,7 @@ ContentPage {
                     text: Translation.tr("Enable")
                     autoToggle: false
 
-                    checked: Config.options?.background?.widgets?.battery?.enable ?? false
+                    checked: Config.getNestedValue("background.widgets.battery.enable", false)
                     onToggledByUser: checked => Config.setNestedValue("background.widgets.battery.enable", checked)
                     StyledToolTip {
                         text: Translation.tr("Show battery status on the desktop (only visible on laptops)")
@@ -1505,14 +1505,14 @@ ContentPage {
                 Item { Layout.fillWidth: true }
                 WidgetPlacementSelector {
                     configPath: "background.widgets.battery"
-                    configEntry: Config.options?.background?.widgets?.battery
+                    configEntry: Config.getNestedValue("background.widgets.battery", ({}))
                     defaultStrategy: "free"
                 }
             }
 
             WidgetZonePicker {
                 configPath: "background.widgets.battery"
-                configEntry: Config.options?.background?.widgets?.battery
+                configEntry: Config.getNestedValue("background.widgets.battery", ({}))
             }
 
             ContentSubsection {
@@ -1520,7 +1520,7 @@ ContentPage {
 
                 ConfigSelectionArray {
                     Layout.fillWidth: true
-                    currentValue: Config.options?.background?.widgets?.battery?.preset ?? "default"
+                    currentValue: Config.getNestedValue("background.widgets.battery.preset", "default")
                     onSelected: newValue => {
                         Config.setNestedValue("background.widgets.battery.preset", newValue);
                         if (newValue === "default") {
@@ -1555,7 +1555,7 @@ ContentPage {
 
                 ConfigSelectionArray {
                     Layout.fillWidth: true
-                    currentValue: Config.options?.background?.widgets?.battery?.displayMode ?? "ring"
+                    currentValue: Config.getNestedValue("background.widgets.battery.displayMode", "ring")
                     onSelected: newValue => Config.setNestedValue("background.widgets.battery.displayMode", newValue)
                     options: [
                         { displayName: Translation.tr("Ring"), icon: "radio_button_checked", value: "ring" },
@@ -1565,71 +1565,71 @@ ContentPage {
                 }
 
                 ConfigRow {
-                    visible: (Config.options?.background?.widgets?.battery?.displayMode ?? "ring") === "ring"
+                    visible: (Config.getNestedValue("background.widgets.battery.displayMode", "ring")) === "ring"
                     Layout.fillWidth: true
                     StyledText { text: Translation.tr("Ring size"); color: Appearance.colors.colOnLayer1 }
                     Item { Layout.fillWidth: true }
                     StyledSpinBox {
                         from: 40; to: 120; stepSize: 4
-                        value: Config.options?.background?.widgets?.battery?.ringSize ?? 72
+                        value: Config.getNestedValue("background.widgets.battery.ringSize", 72)
                         onValueModified: Config.setNestedValue("background.widgets.battery.ringSize", value)
                     }
                 }
 
                 ConfigRow {
-                    visible: (Config.options?.background?.widgets?.battery?.displayMode ?? "ring") === "ring"
+                    visible: (Config.getNestedValue("background.widgets.battery.displayMode", "ring")) === "ring"
                     Layout.fillWidth: true
                     StyledText { text: Translation.tr("Line width"); color: Appearance.colors.colOnLayer1 }
                     Item { Layout.fillWidth: true }
                     StyledSpinBox {
                         from: 1; to: 16; stepSize: 1
-                        value: Config.options?.background?.widgets?.battery?.ringLineWidth ?? 6
+                        value: Config.getNestedValue("background.widgets.battery.ringLineWidth", 6)
                         onValueModified: Config.setNestedValue("background.widgets.battery.ringLineWidth", value)
                     }
                 }
 
                 ConfigRow {
-                    visible: (Config.options?.background?.widgets?.battery?.displayMode ?? "ring") === "bars"
+                    visible: (Config.getNestedValue("background.widgets.battery.displayMode", "ring")) === "bars"
                     Layout.fillWidth: true
                     StyledText { text: Translation.tr("Bar count"); color: Appearance.colors.colOnLayer1 }
                     Item { Layout.fillWidth: true }
                     StyledSpinBox {
                         from: 4; to: 48; stepSize: 2
-                        value: Config.options?.background?.widgets?.battery?.barCount ?? 20
+                        value: Config.getNestedValue("background.widgets.battery.barCount", 20)
                         onValueModified: Config.setNestedValue("background.widgets.battery.barCount", value)
                     }
                 }
                 ConfigRow {
-                    visible: (Config.options?.background?.widgets?.battery?.displayMode ?? "ring") === "bars"
+                    visible: (Config.getNestedValue("background.widgets.battery.displayMode", "ring")) === "bars"
                     Layout.fillWidth: true
                     StyledText { text: Translation.tr("Bar spacing"); color: Appearance.colors.colOnLayer1 }
                     Item { Layout.fillWidth: true }
                     StyledSpinBox {
                         from: 0; to: 8; stepSize: 1
-                        value: Config.options?.background?.widgets?.battery?.barSpacing ?? 2
+                        value: Config.getNestedValue("background.widgets.battery.barSpacing", 2)
                         onValueModified: Config.setNestedValue("background.widgets.battery.barSpacing", value)
                     }
                 }
                 ConfigRow {
-                    visible: (Config.options?.background?.widgets?.battery?.displayMode ?? "ring") === "bars"
+                    visible: (Config.getNestedValue("background.widgets.battery.displayMode", "ring")) === "bars"
                     Layout.fillWidth: true
                     StyledText { text: Translation.tr("Bar radius"); color: Appearance.colors.colOnLayer1 }
                     Item { Layout.fillWidth: true }
                     StyledSpinBox {
                         from: 0; to: 12; stepSize: 1
-                        value: Config.options?.background?.widgets?.battery?.barRadius ?? 2
+                        value: Config.getNestedValue("background.widgets.battery.barRadius", 2)
                         onValueModified: Config.setNestedValue("background.widgets.battery.barRadius", value)
                     }
                 }
 
                 ConfigRow {
-                    visible: (Config.options?.background?.widgets?.battery?.displayMode ?? "ring") === "pill"
+                    visible: (Config.getNestedValue("background.widgets.battery.displayMode", "ring")) === "pill"
                     Layout.fillWidth: true
                     StyledText { text: Translation.tr("Pill height"); color: Appearance.colors.colOnLayer1 }
                     Item { Layout.fillWidth: true }
                     StyledSpinBox {
                         from: 4; to: 32; stepSize: 2
-                        value: Config.options?.background?.widgets?.battery?.pillHeight ?? 12
+                        value: Config.getNestedValue("background.widgets.battery.pillHeight", 12)
                         onValueModified: Config.setNestedValue("background.widgets.battery.pillHeight", value)
                     }
                 }
@@ -1639,14 +1639,14 @@ ContentPage {
                     text: Translation.tr("Show time estimate")
                     autoToggle: false
 
-                    checked: Config.options?.background?.widgets?.battery?.showTime ?? true
+                    checked: Config.getNestedValue("background.widgets.battery.showTime", true)
                     onToggledByUser: checked => Config.setNestedValue("background.widgets.battery.showTime", checked)
                 }
             }
 
             WidgetAppearanceControls {
                 configPath: "background.widgets.battery"
-                configEntry: Config.options?.background?.widgets?.battery
+                configEntry: Config.getNestedValue("background.widgets.battery", ({}))
                 hasCardControls: true
             }
 
@@ -1863,7 +1863,7 @@ ContentPage {
                         Layout.fillWidth: false
                         buttonIcon: cwDelegate.modelData.icon || "widgets"
                         text: cwDelegate.modelData.name
-                        readonly property bool currentEnabled: Config.customWidgetData?.[cwDelegate.modelData.id]?.enable ?? true
+                        readonly property bool currentEnabled: Config.getNestedValue("background.widgets.custom." + cwDelegate.modelData.id + ".enable", true)
                         autoToggle: false
 
                         checked: currentEnabled
@@ -1872,14 +1872,14 @@ ContentPage {
                     Item { Layout.fillWidth: true }
                     WidgetPlacementSelector {
                         configPath: "background.widgets.custom." + cwDelegate.modelData.id
-                        configEntry: Config.customWidgetData?.[cwDelegate.modelData.id]
+                        configEntry: Config.getNestedValue("background.widgets.custom." + cwDelegate.modelData.id, ({}))
                         defaultStrategy: "free"
                     }
                 }
 
                 WidgetZonePicker {
                     configPath: "background.widgets.custom." + cwDelegate.modelData.id
-                    configEntry: Config.customWidgetData?.[cwDelegate.modelData.id]
+                    configEntry: Config.getNestedValue("background.widgets.custom." + cwDelegate.modelData.id, ({}))
                 }
 
                 ContentSubsection {
@@ -1895,14 +1895,14 @@ ContentPage {
                         Row {
                             spacing: 8
                             StyledSpinBox {
-                                from: 0; to: 10000; stepSize: Config.options?.background?.widgets?.editGrid?.size ?? 32
-                                value: Config.customWidgetData?.[cwDelegate.modelData.id]?.x ?? (240 + cwDelegate.index * 36)
+                                from: 0; to: 10000; stepSize: Config.getNestedValue("background.widgets.editGrid.size", 32)
+                                value: Config.getNestedValue("background.widgets.custom." + cwDelegate.modelData.id + ".x", 240 + cwDelegate.index * 36)
                                 onValueModified: Config.setNestedValue("background.widgets.custom." + cwDelegate.modelData.id + ".x", value)
                                 StyledToolTip { text: Translation.tr("X position") }
                             }
                             StyledSpinBox {
-                                from: 0; to: 10000; stepSize: Config.options?.background?.widgets?.editGrid?.size ?? 32
-                                value: Config.customWidgetData?.[cwDelegate.modelData.id]?.y ?? (240 + cwDelegate.index * 28)
+                                from: 0; to: 10000; stepSize: Config.getNestedValue("background.widgets.editGrid.size", 32)
+                                value: Config.getNestedValue("background.widgets.custom." + cwDelegate.modelData.id + ".y", 240 + cwDelegate.index * 28)
                                 onValueModified: Config.setNestedValue("background.widgets.custom." + cwDelegate.modelData.id + ".y", value)
                                 StyledToolTip { text: Translation.tr("Y position") }
                             }
@@ -2089,7 +2089,7 @@ ContentPage {
 
                 WidgetAppearanceControls {
                     configPath: "background.widgets.custom." + cwDelegate.modelData.id
-                    configEntry: Config.customWidgetData?.[cwDelegate.modelData.id]
+                    configEntry: Config.getNestedValue("background.widgets.custom." + cwDelegate.modelData.id, ({}))
                     hasCardControls: true
                 }
             }

@@ -64,18 +64,18 @@ AbstractBackgroundWidget {
         }
     }
 
-    readonly property bool _active: (Config.options?.background?.widgets?.battery?.enable ?? false) && Battery.available
-    readonly property string displayMode: Config.options?.background?.widgets?.battery?.displayMode ?? "ring"
-    readonly property bool showTimeEstimate: Config.options?.background?.widgets?.battery?.showTime ?? true
-    readonly property int ringSize: Math.round((Config.options?.background?.widgets?.battery?.ringSize ?? 72) * scaleFactor)
-    readonly property int ringLineWidth: Math.round((Config.options?.background?.widgets?.battery?.ringLineWidth ?? 6) * scaleFactor)
-    readonly property int barCount: Config.options?.background?.widgets?.battery?.barCount ?? 20
-    readonly property int barSpacing: Config.options?.background?.widgets?.battery?.barSpacing ?? 2
-    readonly property int barRadius: Config.options?.background?.widgets?.battery?.barRadius ?? 2
-    readonly property int pillHeight: Math.round((Config.options?.background?.widgets?.battery?.pillHeight ?? 12) * scaleFactor)
+    readonly property bool _active: (Config.getNestedValue("background.widgets.battery.enable", false)) && Battery.available
+    readonly property string displayMode: Config.getNestedValue("background.widgets.battery.displayMode", "ring")
+    readonly property bool showTimeEstimate: Config.getNestedValue("background.widgets.battery.showTime", true)
+    readonly property int ringSize: Math.round((Config.getNestedValue("background.widgets.battery.ringSize", 72)) * scaleFactor)
+    readonly property int ringLineWidth: Math.round((Config.getNestedValue("background.widgets.battery.ringLineWidth", 6)) * scaleFactor)
+    readonly property int barCount: Config.getNestedValue("background.widgets.battery.barCount", 20)
+    readonly property int barSpacing: Config.getNestedValue("background.widgets.battery.barSpacing", 2)
+    readonly property int barRadius: Config.getNestedValue("background.widgets.battery.barRadius", 2)
+    readonly property int pillHeight: Math.round((Config.getNestedValue("background.widgets.battery.pillHeight", 12)) * scaleFactor)
 
     property real dimFactor: {
-        const v = Config.options?.background?.widgets?.battery?.dim ?? 0;
+        const v = Config.getNestedValue("background.widgets.battery.dim", 0);
         const n = Number(v);
         return Math.max(0, Math.min(1, Number.isFinite(n) ? n / 100 : 0));
     }

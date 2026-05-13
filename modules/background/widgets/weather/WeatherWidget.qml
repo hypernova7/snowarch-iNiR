@@ -19,15 +19,15 @@ AbstractBackgroundWidget {
         x: 100, y: 100
     })
 
-    readonly property int shapeSize: Math.round((Config.options?.background?.widgets?.weather?.size ?? 200) * scaleFactor)
-    readonly property int tempFontSize: Math.round((Config.options?.background?.widgets?.weather?.tempSize ?? 80) * scaleFactor)
-    readonly property int weatherIconSize: Math.round((Config.options?.background?.widgets?.weather?.iconSize ?? 80) * scaleFactor)
-    readonly property bool showTemp: Config.options?.background?.widgets?.weather?.showTemp ?? true
-    readonly property bool showIcon: Config.options?.background?.widgets?.weather?.showIcon ?? true
-    readonly property bool showCondition: Config.options?.background?.widgets?.weather?.showCondition ?? false
-    readonly property int weatherPadding: Math.round((Config.options?.background?.widgets?.weather?.padding ?? 20) * scaleFactor)
-    readonly property int tempFontWeight: Config.options?.background?.widgets?.weather?.tempFontWeight ?? 500
-    readonly property real conditionOpacity: Config.options?.background?.widgets?.weather?.conditionOpacity ?? 0.7
+    readonly property int shapeSize: Math.round((Config.getNestedValue("background.widgets.weather.size", 200)) * scaleFactor)
+    readonly property int tempFontSize: Math.round((Config.getNestedValue("background.widgets.weather.tempSize", 80)) * scaleFactor)
+    readonly property int weatherIconSize: Math.round((Config.getNestedValue("background.widgets.weather.iconSize", 80)) * scaleFactor)
+    readonly property bool showTemp: Config.getNestedValue("background.widgets.weather.showTemp", true)
+    readonly property bool showIcon: Config.getNestedValue("background.widgets.weather.showIcon", true)
+    readonly property bool showCondition: Config.getNestedValue("background.widgets.weather.showCondition", false)
+    readonly property int weatherPadding: Math.round((Config.getNestedValue("background.widgets.weather.padding", 20)) * scaleFactor)
+    readonly property int tempFontWeight: Config.getNestedValue("background.widgets.weather.tempFontWeight", 500)
+    readonly property real conditionOpacity: Config.getNestedValue("background.widgets.weather.conditionOpacity", 0.7)
 
     implicitHeight: backgroundShape.implicitHeight
     implicitWidth: backgroundShape.implicitWidth
@@ -62,7 +62,7 @@ AbstractBackgroundWidget {
 
     // Dim factor (0..1)
     property real dimFactor: {
-        const v = Config.options?.background?.widgets?.weather?.dim ?? 0;
+        const v = Config.getNestedValue("background.widgets.weather.dim", 0);
         const n = Number(v);
         return Math.max(0, Math.min(1, Number.isFinite(n) ? n / 100 : 0));
     }

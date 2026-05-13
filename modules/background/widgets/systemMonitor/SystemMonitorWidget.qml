@@ -17,8 +17,8 @@ AbstractBackgroundWidget {
     configEntryName: "systemMonitor"
     defaultConfig: ({ placementStrategy: "free", preset: "default", displayMode: "bars", showCpu: true, showMemory: true, showGpu: true, showLabels: true, contentWidth: 320, contentHeight: 120, dim: 0, widgetScale: 100, widgetOpacity: 100, showBackground: true, showBorder: true, colorMode: "auto", x: 50, y: 400 })
 
-    implicitWidth: Math.round((Config.options?.background?.widgets?.systemMonitor?.contentWidth ?? 320) * scaleFactor)
-    implicitHeight: Math.round((Config.options?.background?.widgets?.systemMonitor?.contentHeight ?? 120) * scaleFactor)
+    implicitWidth: Math.round((Config.getNestedValue("background.widgets.systemMonitor.contentWidth", 320)) * scaleFactor)
+    implicitHeight: Math.round((Config.getNestedValue("background.widgets.systemMonitor.contentHeight", 120)) * scaleFactor)
 
     visibleWhenLocked: false
     needsColText: true
@@ -80,18 +80,18 @@ AbstractBackgroundWidget {
     }
 
     // ── Config properties ──
-    readonly property bool _active: Config.options?.background?.widgets?.systemMonitor?.enable ?? false
-    readonly property string displayMode: Config.options?.background?.widgets?.systemMonitor?.displayMode ?? "bars"
-    readonly property bool showCpu: Config.options?.background?.widgets?.systemMonitor?.showCpu ?? true
-    readonly property bool showMemory: Config.options?.background?.widgets?.systemMonitor?.showMemory ?? true
-    readonly property bool showGpu: Config.options?.background?.widgets?.systemMonitor?.showGpu ?? true
-    readonly property bool showLabels: Config.options?.background?.widgets?.systemMonitor?.showLabels ?? true
-    readonly property real trackAlpha: Config.options?.background?.widgets?.systemMonitor?.trackAlpha ?? 0.08
-    readonly property real fillOpacity: Config.options?.background?.widgets?.systemMonitor?.fillOpacity ?? 0.7
-    readonly property real graphFillOpacity: Config.options?.background?.widgets?.systemMonitor?.graphFillOpacity ?? 0.3
+    readonly property bool _active: Config.getNestedValue("background.widgets.systemMonitor.enable", false)
+    readonly property string displayMode: Config.getNestedValue("background.widgets.systemMonitor.displayMode", "bars")
+    readonly property bool showCpu: Config.getNestedValue("background.widgets.systemMonitor.showCpu", true)
+    readonly property bool showMemory: Config.getNestedValue("background.widgets.systemMonitor.showMemory", true)
+    readonly property bool showGpu: Config.getNestedValue("background.widgets.systemMonitor.showGpu", true)
+    readonly property bool showLabels: Config.getNestedValue("background.widgets.systemMonitor.showLabels", true)
+    readonly property real trackAlpha: Config.getNestedValue("background.widgets.systemMonitor.trackAlpha", 0.08)
+    readonly property real fillOpacity: Config.getNestedValue("background.widgets.systemMonitor.fillOpacity", 0.7)
+    readonly property real graphFillOpacity: Config.getNestedValue("background.widgets.systemMonitor.graphFillOpacity", 0.3)
 
     property real dimFactor: {
-        const v = Config.options?.background?.widgets?.systemMonitor?.dim ?? 0;
+        const v = Config.getNestedValue("background.widgets.systemMonitor.dim", 0);
         const n = Number(v);
         return Math.max(0, Math.min(1, Number.isFinite(n) ? n / 100 : 0));
     }

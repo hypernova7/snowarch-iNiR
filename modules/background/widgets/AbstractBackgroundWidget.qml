@@ -19,34 +19,19 @@ AbstractWidget {
     required property int scaledScreenWidth
     required property int scaledScreenHeight
     required property real wallpaperScale
+    readonly property string _configPath: "background.widgets." + root.configEntryName
     property bool visibleWhenLocked: false
     property int widgetIndex: 0 // used to offset auto-placed widgets so they don't stack
     // Supports nested configEntryName like "custom.my-widget"
     // Custom widget data lives in Config.customWidgetData (outside adapter).
-    property var configEntry: {
-        const parts = configEntryName.split(".");
-        if (parts[0] === "custom") {
-            let obj = Config.customWidgetData;
-            for (let i = 1; i < parts.length; i++) {
-                if (obj == null) return {};
-                obj = obj[parts[i]];
-            }
-            return obj ?? {};
-        }
-        let obj = Config.options?.background?.widgets;
-        for (let i = 0; i < parts.length; i++) {
-            if (obj == null) return {};
-            obj = obj[parts[i]];
-        }
-        return obj ?? {};
-    }
+    property var configEntry: Config.getNestedValue(root._configPath, ({}))
     // Disable base class x/y behaviors — we define our own with _autoPosition gating
     animateXPos: false
     animateYPos: false
 
     // ── Per-widget customization (inherited by all widgets) ──
     readonly property real _baseScale: {
-        const v = Number(configEntry?.widgetScale ?? 100);
+        const v = Number(root._readConfigKey("widgetScale") ?? 100);
         return Math.max(0.5, Math.min(2.0, Number.isFinite(v) ? v / 100 : 1.0));
     }
     // scaleFactor: the final multiplier widgets use for layout dimensions and font sizes.
@@ -55,27 +40,27 @@ AbstractWidget {
     property bool _isResizing: false
     readonly property real scaleFactor: ((draggable && containsPress && !_isResizing) ? 1.05 : 1.0) * _baseScale
     readonly property real widgetOpacity: {
-        const v = Number(configEntry?.widgetOpacity ?? 100);
+        const v = Number(root._readConfigKey("widgetOpacity") ?? 100);
         return Math.max(0, Math.min(1, Number.isFinite(v) ? v / 100 : 1.0));
     }
-    readonly property bool showBackground: configEntry?.showBackground ?? true
-    readonly property bool showBorder: configEntry?.showBorder ?? true
+    readonly property bool showBackground: root._readConfigKey("showBackground") ?? true
+    readonly property bool showBorder: root._readConfigKey("showBorder") ?? true
     // Granular card controls — override booleans when present
     readonly property real backgroundOpacity: {
-        const v = configEntry?.backgroundOpacity;
+        const v = root._readConfigKey("backgroundOpacity");
         return (v !== undefined && v !== null) ? Math.max(0, Math.min(1, Number(v))) : (showBackground ? 0.06 : 0);
     }
     readonly property real borderWidth: {
-        const v = configEntry?.borderWidth;
+        const v = root._readConfigKey("borderWidth");
         return (v !== undefined && v !== null) ? Math.max(0, Math.min(8, Number(v))) : (showBorder ? 1 : 0);
     }
     readonly property real borderOpacity: {
-        const v = configEntry?.borderOpacity;
+        const v = root._readConfigKey("borderOpacity");
         return (v !== undefined && v !== null) ? Math.max(0, Math.min(1, Number(v))) : 0.08;
     }
-    readonly property real cornerRadiusOverride: configEntry?.cornerRadius ?? -1
-    readonly property string colorMode: configEntry?.colorMode ?? "auto"
-    property string placementStrategy: configEntry?.placementStrategy ?? "free"
+    readonly property real cornerRadiusOverride: root._readConfigKey("cornerRadius") ?? -1
+    readonly property string colorMode: root._readConfigKey("colorMode") ?? "auto"
+    property string placementStrategy: root._readConfigKey("placementStrategy") ?? "free"
 
     // ── Snap zones ────────────────────────────────────────────
     // 9 screen regions for quick widget placement
@@ -123,7 +108,7 @@ AbstractWidget {
 
     function _toggleZonePlacement(): void {
         if (root._isZonePlacement) {
-            const prefix = "background.widgets." + root.configEntryName;
+            const prefix = root._configPath;
             let updates = {};
             updates[prefix + ".placementStrategy"] = "free";
             updates[prefix + ".x"] = root._snapToPixel(root.x);
@@ -138,13 +123,13 @@ AbstractWidget {
         const pos = root._getZonePosition(zone);
         const finalX = root._snapToPixel(pos.x);
         const finalY = root._snapToPixel(pos.y);
-        const prefix = "background.widgets." + root.configEntryName;
+        const prefix = root._configPath;
         let updates = {};
         if (root.placementStrategy !== zone)
             updates[prefix + ".placementStrategy"] = zone;
-        if (Number(root.configEntry?.x) !== finalX)
+        if (Number(root._readConfigKey("x")) !== finalX)
             updates[prefix + ".x"] = finalX;
-        if (Number(root.configEntry?.y) !== finalY)
+        if (Number(root._readConfigKey("y")) !== finalY)
             updates[prefix + ".y"] = finalY;
         if (Object.keys(updates).length > 0)
             Config.setNestedValues(updates);
@@ -191,11 +176,11 @@ AbstractWidget {
     // Target position — zones read stored config, free clamps to screen
     property real targetX: {
         if (root._isZonePlacement) {
-            const rawX = Number(configEntry?.x ?? 0);
+            const rawX = Number(root._readConfigKey("x") ?? 0);
             return _snapToPixel(Number.isFinite(rawX) ? rawX : 0);
         }
         if (root.placementStrategy === "free") {
-            const rawX = Number(configEntry?.x ?? 0);
+            const rawX = Number(root._readConfigKey("x") ?? 0);
             const safeX = Number.isFinite(rawX) ? rawX : 0;
             return root._clampX(safeX);
         }
@@ -203,11 +188,11 @@ AbstractWidget {
     }
     property real targetY: {
         if (root._isZonePlacement) {
-            const rawY = Number(configEntry?.y ?? 0);
+            const rawY = Number(root._readConfigKey("y") ?? 0);
             return _snapToPixel(Number.isFinite(rawY) ? rawY : 0);
         }
         if (root.placementStrategy === "free") {
-            const rawY = Number(configEntry?.y ?? 0);
+            const rawY = Number(root._readConfigKey("y") ?? 0);
             const safeY = Number.isFinite(rawY) ? rawY : 0;
             return root._clampY(safeY);
         }
@@ -255,8 +240,8 @@ AbstractWidget {
         root.y = root.targetY;
     }
 
-    readonly property int _editGridSize: Config.options?.background?.widgets?.editGrid?.size ?? 32
-    readonly property bool _snapEnabled: GlobalStates.widgetEditMode && (Config.options?.background?.widgets?.editGrid?.snap ?? true)
+    readonly property int _editGridSize: Config.getNestedValue("background.widgets.editGrid.size", 32)
+    readonly property bool _snapEnabled: GlobalStates.widgetEditMode && (Config.getNestedValue("background.widgets.editGrid.snap", true))
 
     function _snapToGrid(value: real): real {
         return Math.round(value / _editGridSize) * _editGridSize;
@@ -519,7 +504,7 @@ AbstractWidget {
                 const mapped = rhArea.mapToItem(root.parent, mouse.x, mouse.y);
                 const dx = mapped.x - rh._canvasStartX;
                 const dy = mapped.y - rh._canvasStartY;
-                const prefix = "background.widgets." + root.configEntryName;
+                const prefix = root._configPath;
                 const axes = root.resizableAxes;
                 const isUniform = !!axes.uniform;
 
@@ -632,7 +617,7 @@ AbstractWidget {
         const finalY = root._snapToPixel(newY);
         root.x = finalX;
         root.y = finalY;
-        const prefix = "background.widgets." + root.configEntryName;
+        const prefix = root._configPath;
         let updates = {};
         updates[prefix + ".x"] = finalX;
         updates[prefix + ".y"] = finalY;
@@ -678,13 +663,7 @@ AbstractWidget {
 
     // Read a possibly-nested key from configEntry (e.g. "cookie.size" → configEntry.cookie.size)
     function _readConfigKey(key: string): var {
-        const parts = key.split(".");
-        let obj = root.configEntry;
-        for (let i = 0; i < parts.length; i++) {
-            if (obj == null) return undefined;
-            obj = obj[parts[i]];
-        }
-        return obj;
+        return Config.getNestedValue(root._configPath + "." + key, undefined);
     }
 
     // Override in subclasses with widget-specific default values
@@ -693,7 +672,7 @@ AbstractWidget {
     function _seedDefaultsIfNeeded(): void {
         if (!Config.ready) return;
         if (Object.keys(root.defaultConfig).length === 0) return;
-        const prefix = "background.widgets." + root.configEntryName;
+        const prefix = root._configPath;
         let updates = {};
         for (const key in root.defaultConfig) {
             if (root._readConfigKey(key) === undefined)
@@ -704,7 +683,7 @@ AbstractWidget {
     }
     Component.onCompleted: _seedDefaultsIfNeeded()
     function resetToDefaults(): void {
-        const prefix = "background.widgets." + root.configEntryName;
+        const prefix = root._configPath;
         const defaults = root.defaultConfig;
         for (const key in defaults) {
             Config.setNestedValue(prefix + "." + key, defaults[key]);
