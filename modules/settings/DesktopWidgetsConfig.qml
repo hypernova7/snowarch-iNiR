@@ -203,96 +203,174 @@ ContentPage {
         onClicked: if (wsc.toggleAction) wsc.toggleAction(!wsc.active)
     }
 
+    // ── Reusable slider row with icon + inline value ────────
+    component SliderRow: RowLayout {
+        id: sliderRow
+        property string icon: ""
+        property string label: ""
+        property string configPath: ""
+        property real sliderFrom: 0
+        property real sliderTo: 100
+        property real sliderStep: 5
+        property real sliderValue: 0
+        property bool isNormalized: false // true = value is 0-1 stored, display as 0-100%
+
+        Layout.fillWidth: true
+        spacing: 8
+
+        MaterialSymbol {
+            visible: sliderRow.icon.length > 0
+            text: sliderRow.icon
+            iconSize: Appearance.font.pixelSize.normal
+            color: Appearance.colors.colSubtext
+        }
+        StyledText {
+            Layout.preferredWidth: 100
+            text: sliderRow.label
+            color: Appearance.colors.colOnLayer1
+            font.pixelSize: Appearance.font.pixelSize.small
+        }
+        StyledSlider {
+            id: _slider
+            Layout.fillWidth: true
+            configuration: StyledSlider.Configuration.S
+            stopIndicatorValues: []
+            from: sliderRow.sliderFrom
+            to: sliderRow.sliderTo
+            stepSize: sliderRow.sliderStep
+            value: sliderRow.isNormalized ? Math.round(sliderRow.sliderValue * 100) : sliderRow.sliderValue
+            onMoved: {
+                if (sliderRow.isNormalized)
+                    Config.setNestedValue(sliderRow.configPath, Math.round(_slider.value) / 100)
+                else
+                    Config.setNestedValue(sliderRow.configPath, Math.round(_slider.value))
+            }
+        }
+        StyledText {
+            Layout.preferredWidth: 36
+            horizontalAlignment: Text.AlignRight
+            text: Math.round(_slider.value) + "%"
+            color: Appearance.colors.colSubtext
+            font.pixelSize: Appearance.font.pixelSize.smaller
+            font.family: Appearance.font.family.numbers
+        }
+    }
+
     // ── Reusable appearance controls for any widget ──────────
-    component WidgetAppearanceControls: ContentSubsection {
+    component WidgetAppearanceControls: ColumnLayout {
         id: wac
         required property string configPath
         required property var configEntry
         property bool hasDim: true
         property bool hasCardControls: false
         property int dimDefault: 0
-        title: Translation.tr("Appearance")
 
-        WidgetSettingRow {
-            label: Translation.tr("Scale")
-            StyledSpinBox {
-                from: 50; to: 200; stepSize: 10
-                value: Config.getNestedValue(wac.configPath + ".widgetScale", wac.configEntry?.widgetScale ?? 100)
-                onValueModified: Config.setNestedValue(wac.configPath + ".widgetScale", value)
+        Layout.fillWidth: true
+        spacing: 0
+
+        // ── Position & Lock ──
+        ContentSubsection {
+            title: Translation.tr("Position")
+
+            WidgetSettingRow {
+                label: Translation.tr("Lock position")
+                icon: "lock"
+                WidgetToggleChip {
+                    configPath: wac.configPath + ".locked"
+                    defaultValue: false
+                    buttonIcon: Boolean(Config.getNestedValue(wac.configPath + ".locked", false)) ? "lock" : "lock_open"
+                    buttonText: Boolean(Config.getNestedValue(wac.configPath + ".locked", false)) ? Translation.tr("Locked") : Translation.tr("Unlocked")
+                }
+            }
+
+            WidgetSettingRow {
+                label: Translation.tr("Color mode")
+                icon: "palette"
+                trailing: false
+                ConfigSelectionArray {
+                    currentValue: Config.getNestedValue(wac.configPath + ".colorMode", wac.configEntry?.colorMode ?? "auto")
+                    onSelected: newValue => Config.setNestedValue(wac.configPath + ".colorMode", newValue)
+                    options: root._colorModeOptions()
+                }
             }
         }
 
-        WidgetSettingRow {
-            label: Translation.tr("Opacity")
-            trailing: false
-            StyledSlider {
-                from: 10; to: 100; stepSize: 5
-                value: Config.getNestedValue(wac.configPath + ".widgetOpacity", wac.configEntry?.widgetOpacity ?? 100)
-                onMoved: Config.setNestedValue(wac.configPath + ".widgetOpacity", Math.round(value))
+        // ── Visual ──
+        ContentSubsection {
+            title: Translation.tr("Visual")
+
+            WidgetSettingRow {
+                label: Translation.tr("Scale")
+                icon: "zoom_in"
+                StyledSpinBox {
+                    from: 50; to: 200; stepSize: 10
+                    value: Config.getNestedValue(wac.configPath + ".widgetScale", wac.configEntry?.widgetScale ?? 100)
+                    onValueModified: Config.setNestedValue(wac.configPath + ".widgetScale", value)
+                    StyledToolTip { text: Translation.tr("Widget size percentage") }
+                }
+            }
+
+            SliderRow {
+                icon: "opacity"
+                label: Translation.tr("Opacity")
+                configPath: wac.configPath + ".widgetOpacity"
+                sliderFrom: 10; sliderTo: 100; sliderStep: 5
+                sliderValue: Config.getNestedValue(wac.configPath + ".widgetOpacity", wac.configEntry?.widgetOpacity ?? 100)
+            }
+
+            SliderRow {
+                visible: wac.hasDim
+                icon: "contrast"
+                label: Translation.tr("Dim")
+                configPath: wac.configPath + ".dim"
+                sliderFrom: 0; sliderTo: 100; sliderStep: 5
+                sliderValue: Config.getNestedValue(wac.configPath + ".dim", wac.configEntry?.dim ?? wac.dimDefault)
             }
         }
 
-        WidgetSettingRow {
-            visible: wac.hasDim
-            label: Translation.tr("Dim")
-            trailing: false
-            StyledSlider {
-                from: 0; to: 100; stepSize: 5
-                value: Config.getNestedValue(wac.configPath + ".dim", wac.configEntry?.dim ?? wac.dimDefault)
-                onMoved: Config.setNestedValue(wac.configPath + ".dim", Math.round(value))
-            }
-        }
-
-        WidgetSettingRow {
+        // ── Card surface ──
+        ContentSubsection {
             visible: wac.hasCardControls
-            label: Translation.tr("Background opacity")
-            trailing: false
-            StyledSlider {
-                from: 0; to: 100; stepSize: 1
-                value: Math.round(Config.getNestedValue(wac.configPath + ".backgroundOpacity", wac.configEntry?.backgroundOpacity ?? 0.06) * 100)
-                onMoved: Config.setNestedValue(wac.configPath + ".backgroundOpacity", Math.round(value) / 100)
-            }
-        }
+            title: Translation.tr("Card surface")
 
-        WidgetSettingRow {
-            visible: wac.hasCardControls
-            label: Translation.tr("Border width")
-            StyledSpinBox {
-                from: 0; to: 8; stepSize: 1
-                value: Config.getNestedValue(wac.configPath + ".borderWidth", wac.configEntry?.borderWidth ?? 1)
-                onValueModified: Config.setNestedValue(wac.configPath + ".borderWidth", value)
+            SliderRow {
+                icon: "gradient"
+                label: Translation.tr("Background")
+                configPath: wac.configPath + ".backgroundOpacity"
+                sliderFrom: 0; sliderTo: 100; sliderStep: 1
+                sliderValue: Config.getNestedValue(wac.configPath + ".backgroundOpacity", wac.configEntry?.backgroundOpacity ?? 0.06)
+                isNormalized: true
             }
-        }
 
-        WidgetSettingRow {
-            visible: wac.hasCardControls
-            label: Translation.tr("Border opacity")
-            trailing: false
-            StyledSlider {
-                from: 0; to: 100; stepSize: 1
-                value: Math.round(Config.getNestedValue(wac.configPath + ".borderOpacity", wac.configEntry?.borderOpacity ?? 0.08) * 100)
-                onMoved: Config.setNestedValue(wac.configPath + ".borderOpacity", Math.round(value) / 100)
+            WidgetSettingRow {
+                label: Translation.tr("Border")
+                icon: "border_style"
+                StyledSpinBox {
+                    from: 0; to: 8; stepSize: 1
+                    value: Config.getNestedValue(wac.configPath + ".borderWidth", wac.configEntry?.borderWidth ?? 1)
+                    onValueModified: Config.setNestedValue(wac.configPath + ".borderWidth", value)
+                    StyledToolTip { text: Translation.tr("Border width (px)") }
+                }
             }
-        }
 
-        WidgetSettingRow {
-            visible: wac.hasCardControls
-            label: Translation.tr("Corner radius")
-            StyledSpinBox {
-                from: -1; to: 50; stepSize: 1
-                value: Config.getNestedValue(wac.configPath + ".cornerRadius", wac.configEntry?.cornerRadius ?? -1)
-                onValueModified: Config.setNestedValue(wac.configPath + ".cornerRadius", value)
-                StyledToolTip { text: Translation.tr("-1 = use theme default") }
+            SliderRow {
+                icon: "tonality"
+                label: Translation.tr("Border opacity")
+                configPath: wac.configPath + ".borderOpacity"
+                sliderFrom: 0; sliderTo: 100; sliderStep: 1
+                sliderValue: Config.getNestedValue(wac.configPath + ".borderOpacity", wac.configEntry?.borderOpacity ?? 0.08)
+                isNormalized: true
             }
-        }
 
-        WidgetSettingRow {
-            label: Translation.tr("Color mode")
-            trailing: false
-            ConfigSelectionArray {
-                currentValue: Config.getNestedValue(wac.configPath + ".colorMode", wac.configEntry?.colorMode ?? "auto")
-                onSelected: newValue => Config.setNestedValue(wac.configPath + ".colorMode", newValue)
-                options: root._colorModeOptions()
+            WidgetSettingRow {
+                label: Translation.tr("Corner radius")
+                icon: "rounded_corner"
+                StyledSpinBox {
+                    from: -1; to: 50; stepSize: 1
+                    value: Config.getNestedValue(wac.configPath + ".cornerRadius", wac.configEntry?.cornerRadius ?? -1)
+                    onValueModified: Config.setNestedValue(wac.configPath + ".cornerRadius", value)
+                    StyledToolTip { text: Translation.tr("-1 = use theme default") }
+                }
             }
         }
     }
@@ -830,6 +908,7 @@ ContentPage {
                     Config.setNestedValue("background.widgets.clock.borderOpacity", 0.08);
                     Config.setNestedValue("background.widgets.clock.cornerRadius", -1);
                     Config.setNestedValue("background.widgets.clock.colorMode", "auto");
+                    Config.setNestedValue("background.widgets.clock.locked", false);
                     Config.setNestedValue("background.widgets.clock.x", 100);
                     Config.setNestedValue("background.widgets.clock.y", 100);
                 }
@@ -1023,6 +1102,7 @@ ContentPage {
                     Config.setNestedValue("background.widgets.weather.widgetOpacity", 100);
                     Config.setNestedValue("background.widgets.weather.colorMode", "auto");
                     Config.setNestedValue("background.widgets.weather.dim", 0);
+                    Config.setNestedValue("background.widgets.weather.locked", false);
                     Config.setNestedValue("background.widgets.weather.x", 100);
                     Config.setNestedValue("background.widgets.weather.y", 200);
                 }
@@ -1081,6 +1161,7 @@ ContentPage {
             WidgetAppearanceControls {
                 configPath: "background.widgets.mediaControls"
                 configEntry: Config.getNestedValue("background.widgets.mediaControls", ({}))
+                hasCardControls: true
             }
 
             RippleButton {
@@ -1093,6 +1174,7 @@ ContentPage {
                     Config.setNestedValue("background.widgets.mediaControls.widgetOpacity", 100);
                     Config.setNestedValue("background.widgets.mediaControls.colorMode", "auto");
                     Config.setNestedValue("background.widgets.mediaControls.dim", 0);
+                    Config.setNestedValue("background.widgets.mediaControls.locked", false);
                     Config.setNestedValue("background.widgets.mediaControls.x", 100);
                     Config.setNestedValue("background.widgets.mediaControls.y", 100);
                 }
@@ -1266,6 +1348,7 @@ ContentPage {
                     Config.setNestedValue("background.widgets.visualizer.borderOpacity", 0.08);
                     Config.setNestedValue("background.widgets.visualizer.cornerRadius", -1);
                     Config.setNestedValue("background.widgets.visualizer.colorMode", "auto");
+                    Config.setNestedValue("background.widgets.visualizer.locked", false);
                     Config.setNestedValue("background.widgets.visualizer.x", 100);
                     Config.setNestedValue("background.widgets.visualizer.y", 100);
                 }
@@ -1476,6 +1559,7 @@ ContentPage {
                     Config.setNestedValue("background.widgets.systemMonitor.borderOpacity", 0.08);
                     Config.setNestedValue("background.widgets.systemMonitor.cornerRadius", -1);
                     Config.setNestedValue("background.widgets.systemMonitor.colorMode", "auto");
+                    Config.setNestedValue("background.widgets.systemMonitor.locked", false);
                     Config.setNestedValue("background.widgets.systemMonitor.x", 50);
                     Config.setNestedValue("background.widgets.systemMonitor.y", 400);
                 }
@@ -1669,6 +1753,7 @@ ContentPage {
                     Config.setNestedValue("background.widgets.battery.borderOpacity", 0.08);
                     Config.setNestedValue("background.widgets.battery.cornerRadius", -1);
                     Config.setNestedValue("background.widgets.battery.colorMode", "auto");
+                    Config.setNestedValue("background.widgets.battery.locked", false);
                     Config.setNestedValue("background.widgets.battery.x", 50);
                     Config.setNestedValue("background.widgets.battery.y", 50);
                 }

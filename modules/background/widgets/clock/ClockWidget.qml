@@ -32,67 +32,49 @@ AbstractBackgroundWidget {
     resizeMinHeight: 40
 
     editPopoverContent: Component {
-        Item {
-            implicitWidth: _clockCol.implicitWidth
-            implicitHeight: _clockCol.implicitHeight
-            Column {
-                id: _clockCol
-                spacing: 6
-                Row {
-                    spacing: 4
-                    RippleButton {
-                        width: 86; height: 28
-                        buttonRadius: Appearance.rounding.small
-                        toggled: root.clockStyle === "digital"
-                        colBackground: toggled ? ColorUtils.applyAlpha(Appearance.colors.colPrimary, 0.16) : "transparent"
-                        colBackgroundHover: ColorUtils.applyAlpha(Appearance.colors.colOnLayer2, 0.08)
-                        colRipple: ColorUtils.applyAlpha(Appearance.colors.colPrimary, 0.12)
-                        downAction: () => Config.setNestedValue("background.widgets.clock.style", "digital")
-                        contentItem: StyledText { anchors.centerIn: parent; text: "Digital"; color: Appearance.colors.colOnLayer2; font.pixelSize: Appearance.font.pixelSize.small }
-                    }
-                    RippleButton {
-                        width: 86; height: 28
-                        buttonRadius: Appearance.rounding.small
-                        toggled: root.clockStyle === "cookie"
-                        colBackground: toggled ? ColorUtils.applyAlpha(Appearance.colors.colPrimary, 0.16) : "transparent"
-                        colBackgroundHover: ColorUtils.applyAlpha(Appearance.colors.colOnLayer2, 0.08)
-                        colRipple: ColorUtils.applyAlpha(Appearance.colors.colPrimary, 0.12)
-                        downAction: () => Config.setNestedValue("background.widgets.clock.style", "cookie")
-                        contentItem: StyledText { anchors.centerIn: parent; text: "Cookie"; color: Appearance.colors.colOnLayer2; font.pixelSize: Appearance.font.pixelSize.small }
+        Column {
+            spacing: 6
+            GridLayout {
+                columns: 2
+                columnSpacing: 4
+                rowSpacing: 4
+                Layout.alignment: Qt.AlignHCenter
+                Repeater {
+                    model: [
+                        { label: "Digital", icon: "digital_out_of_home", value: "digital" },
+                        { label: "Cookie", icon: "circle", value: "cookie" }
+                    ]
+                    SelectionGroupButton {
+                        required property var modelData
+                        Layout.fillWidth: true
+                        leftmost: true; rightmost: true
+                        buttonIcon: modelData.icon
+                        buttonText: modelData.label
+                        toggled: root.clockStyle === modelData.value
+                        onClicked: Config.setNestedValue("background.widgets.clock.style", modelData.value)
                     }
                 }
-                Row {
-                    spacing: 4
-                    visible: root.clockStyle === "digital"
-                    RippleButton {
-                        width: 56; height: 28
-                        buttonRadius: Appearance.rounding.small
-                        toggled: root.timeFormat === "system"
-                        colBackground: toggled ? ColorUtils.applyAlpha(Appearance.colors.colPrimary, 0.16) : "transparent"
-                        colBackgroundHover: ColorUtils.applyAlpha(Appearance.colors.colOnLayer2, 0.08)
-                        colRipple: ColorUtils.applyAlpha(Appearance.colors.colPrimary, 0.12)
-                        downAction: () => Config.setNestedValue("background.widgets.clock.timeFormat", "system")
-                        contentItem: StyledText { anchors.centerIn: parent; text: "Sys"; color: Appearance.colors.colOnLayer2; font.pixelSize: Appearance.font.pixelSize.small }
-                    }
-                    RippleButton {
-                        width: 56; height: 28
-                        buttonRadius: Appearance.rounding.small
-                        toggled: root.timeFormat === "24h"
-                        colBackground: toggled ? ColorUtils.applyAlpha(Appearance.colors.colPrimary, 0.16) : "transparent"
-                        colBackgroundHover: ColorUtils.applyAlpha(Appearance.colors.colOnLayer2, 0.08)
-                        colRipple: ColorUtils.applyAlpha(Appearance.colors.colPrimary, 0.12)
-                        downAction: () => Config.setNestedValue("background.widgets.clock.timeFormat", "24h")
-                        contentItem: StyledText { anchors.centerIn: parent; text: "24h"; color: Appearance.colors.colOnLayer2; font.pixelSize: Appearance.font.pixelSize.small }
-                    }
-                    RippleButton {
-                        width: 56; height: 28
-                        buttonRadius: Appearance.rounding.small
-                        toggled: root.timeFormat === "12h"
-                        colBackground: toggled ? ColorUtils.applyAlpha(Appearance.colors.colPrimary, 0.16) : "transparent"
-                        colBackgroundHover: ColorUtils.applyAlpha(Appearance.colors.colOnLayer2, 0.08)
-                        colRipple: ColorUtils.applyAlpha(Appearance.colors.colPrimary, 0.12)
-                        downAction: () => Config.setNestedValue("background.widgets.clock.timeFormat", "12h")
-                        contentItem: StyledText { anchors.centerIn: parent; text: "12h"; color: Appearance.colors.colOnLayer2; font.pixelSize: Appearance.font.pixelSize.small }
+            }
+            GridLayout {
+                columns: 3
+                columnSpacing: 4
+                rowSpacing: 4
+                Layout.alignment: Qt.AlignHCenter
+                visible: root.clockStyle === "digital"
+                Repeater {
+                    model: [
+                        { label: "System", icon: "settings", value: "system" },
+                        { label: "24h", icon: "schedule", value: "24h" },
+                        { label: "12h", icon: "nest_clock_farsight_analog", value: "12h" }
+                    ]
+                    SelectionGroupButton {
+                        required property var modelData
+                        Layout.fillWidth: true
+                        leftmost: true; rightmost: true
+                        buttonIcon: modelData.icon
+                        buttonText: modelData.label
+                        toggled: root.timeFormat === modelData.value
+                        onClicked: Config.setNestedValue("background.widgets.clock.timeFormat", modelData.value)
                     }
                 }
             }

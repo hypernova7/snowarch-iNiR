@@ -1,4 +1,5 @@
 import QtQuick
+import QtQuick.Layouts
 import qs
 import qs.services
 import qs.modules.common
@@ -36,25 +37,24 @@ AbstractBackgroundWidget {
     resizeMinHeight: 80
 
     editPopoverContent: Component {
-        Item {
-            implicitWidth: _popRow.implicitWidth
-            implicitHeight: _popRow.implicitHeight
-            Row {
-                id: _popRow
-                spacing: 4
-                Repeater {
-                    model: [{ label: "Temp", key: "showTemp", active: root.showTemp }, { label: "Icon", key: "showIcon", active: root.showIcon }, { label: "Text", key: "showCondition", active: root.showCondition }]
-                    RippleButton {
-                        required property var modelData
-                        width: 60; height: 28
-                        buttonRadius: Appearance.rounding.small
-                        toggled: modelData.active
-                        colBackground: toggled ? ColorUtils.applyAlpha(Appearance.colors.colPrimary, 0.16) : "transparent"
-                        colBackgroundHover: ColorUtils.applyAlpha(Appearance.colors.colOnLayer2, 0.08)
-                        colRipple: ColorUtils.applyAlpha(Appearance.colors.colPrimary, 0.12)
-                        downAction: () => Config.setNestedValue("background.widgets.weather." + modelData.key, !modelData.active)
-                        contentItem: StyledText { anchors.centerIn: parent; text: modelData.label; color: Appearance.colors.colOnLayer2; font.pixelSize: Appearance.font.pixelSize.small }
-                    }
+        GridLayout {
+            columns: 3
+            columnSpacing: 4
+            rowSpacing: 4
+            Repeater {
+                model: [
+                    { label: "Temp", icon: "thermostat", key: "showTemp", active: root.showTemp },
+                    { label: "Icon", icon: "cloud", key: "showIcon", active: root.showIcon },
+                    { label: "Text", icon: "text_fields", key: "showCondition", active: root.showCondition }
+                ]
+                SelectionGroupButton {
+                    required property var modelData
+                    Layout.fillWidth: true
+                    leftmost: true; rightmost: true
+                    buttonIcon: modelData.icon
+                    buttonText: modelData.label
+                    toggled: modelData.active
+                    onClicked: Config.setNestedValue("background.widgets.weather." + modelData.key, !modelData.active)
                 }
             }
         }

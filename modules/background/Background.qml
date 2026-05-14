@@ -1209,6 +1209,7 @@ Scope {
 
                             // Grid snap toggle
                             RippleButton {
+                                id: gridSnapBtn
                                 width: 36; height: 36
                                 buttonRadius: Appearance.rounding.full
                                 toggled: Config.getNestedValue("background.widgets.editGrid.snap", true)
@@ -1225,9 +1226,36 @@ Scope {
                                     anchors.centerIn: parent
                                     text: "grid_3x3"
                                     iconSize: 20
-                                    color: parent.toggled ? Appearance.colors.colPrimary : Appearance.colors.colOnLayer2
+                                    color: gridSnapBtn.toggled ? Appearance.colors.colPrimary : Appearance.colors.colOnLayer2
                                 }
                                 StyledToolTip { text: Translation.tr("Snap to grid") }
+                            }
+
+                            // Grid size cycle
+                            RippleButton {
+                                id: gridSizeBtn
+                                readonly property int _gridSize: Config.getNestedValue("background.widgets.editGrid.size", 32)
+                                width: 36; height: 36
+                                buttonRadius: Appearance.rounding.full
+                                colBackground: "transparent"
+                                colBackgroundHover: CF.ColorUtils.applyAlpha(Appearance.colors.colOnLayer2, 0.08)
+                                colRipple: CF.ColorUtils.applyAlpha(Appearance.colors.colOnLayer2, 0.12)
+                                downAction: () => {
+                                    const sizes = [16, 32, 48, 64];
+                                    const current = gridSizeBtn._gridSize;
+                                    const idx = sizes.indexOf(current);
+                                    const next = sizes[(idx + 1) % sizes.length];
+                                    Config.setNestedValue("background.widgets.editGrid.size", next);
+                                }
+                                contentItem: StyledText {
+                                    anchors.centerIn: parent
+                                    text: gridSizeBtn._gridSize + ""
+                                    font.pixelSize: Appearance.font.pixelSize.smaller
+                                    font.family: Appearance.font.family.numbers
+                                    font.weight: Font.Medium
+                                    color: Appearance.colors.colOnLayer2
+                                }
+                                StyledToolTip { text: Translation.tr("Grid size: %1px — click to cycle").arg(gridSizeBtn._gridSize) }
                             }
 
                             // Separator
@@ -1323,6 +1351,23 @@ Scope {
                                 StyledToolTip { text: Translation.tr("Manage widgets") }
                             }
 
+                            // Open full settings
+                            RippleButton {
+                                width: 36; height: 36
+                                buttonRadius: Appearance.rounding.full
+                                colBackground: "transparent"
+                                colBackgroundHover: CF.ColorUtils.applyAlpha(Appearance.colors.colOnLayer2, 0.08)
+                                colRipple: CF.ColorUtils.applyAlpha(Appearance.colors.colOnLayer2, 0.12)
+                                downAction: () => { GlobalStates.settingsOverlayOpen = true }
+                                contentItem: MaterialSymbol {
+                                    anchors.centerIn: parent
+                                    text: "settings"
+                                    iconSize: 18
+                                    color: Appearance.colors.colOnLayer2
+                                }
+                                StyledToolTip { text: Translation.tr("Widget settings") }
+                            }
+
                             // Separator
                             Rectangle {
                                 width: 1; height: 24
@@ -1356,18 +1401,19 @@ Scope {
                         active: shown
                         visible: shown
                         z: 150
-                        anchors {
-                            right: parent.right
-                            bottom: editControlsBar.top
-                            bottomMargin: 12
-                            rightMargin: 24
+                        x: Math.round(parent.width - width - 24)
+                        y: Math.round(parent.height - (editControlsBar.height + 24) - height - 12)
+                        sourceComponent: WidgetManagerPanel {
+                            canvasWidth: widgetManagerPanel.parent?.width ?? 800
+                            canvasHeight: widgetManagerPanel.parent?.height ?? 600
                         }
-                        sourceComponent: WidgetManagerPanel {}
                     }
                 }
 
                 FadeLoader {
                     shown: bgRoot._widgetEnabled("weather", true)
+                    containmentMask: GlobalStates.widgetEditMode ? _hitMask : null
+                    Item { id: _hitMask; x: -30; y: -260; width: (parent?.width ?? 0) + 60; height: (parent?.height ?? 0) + 300 }
                     sourceComponent: WeatherWidget {
                         widgetIndex: 0
                         screenWidth: bgRoot.screen.width
@@ -1380,6 +1426,8 @@ Scope {
 
                 FadeLoader {
                     shown: bgRoot._widgetEnabled("clock", true)
+                    containmentMask: GlobalStates.widgetEditMode ? _hitMask2 : null
+                    Item { id: _hitMask2; x: -30; y: -260; width: (parent?.width ?? 0) + 60; height: (parent?.height ?? 0) + 300 }
                     sourceComponent: ClockWidget {
                         widgetIndex: 1
                         screenWidth: bgRoot.screen.width
@@ -1393,6 +1441,8 @@ Scope {
 
                 FadeLoader {
                     shown: bgRoot._widgetEnabled("mediaControls", true)
+                    containmentMask: GlobalStates.widgetEditMode ? _hitMask3 : null
+                    Item { id: _hitMask3; x: -30; y: -260; width: (parent?.width ?? 0) + 60; height: (parent?.height ?? 0) + 300 }
                     sourceComponent: MediaControlsWidget {
                         widgetIndex: 2
                         screenWidth: bgRoot.screen.width
@@ -1405,6 +1455,8 @@ Scope {
 
                 FadeLoader {
                     shown: bgRoot._widgetEnabled("visualizer", false)
+                    containmentMask: GlobalStates.widgetEditMode ? _hitMask4 : null
+                    Item { id: _hitMask4; x: -30; y: -260; width: (parent?.width ?? 0) + 60; height: (parent?.height ?? 0) + 300 }
                     sourceComponent: VisualizerWidget {
                         widgetIndex: 3
                         screenWidth: bgRoot.screen.width
@@ -1417,6 +1469,8 @@ Scope {
 
                 FadeLoader {
                     shown: bgRoot._widgetEnabled("systemMonitor", false)
+                    containmentMask: GlobalStates.widgetEditMode ? _hitMask5 : null
+                    Item { id: _hitMask5; x: -30; y: -260; width: (parent?.width ?? 0) + 60; height: (parent?.height ?? 0) + 300 }
                     sourceComponent: SystemMonitorWidget {
                         widgetIndex: 4
                         screenWidth: bgRoot.screen.width
@@ -1429,6 +1483,8 @@ Scope {
 
                 FadeLoader {
                     shown: bgRoot._widgetEnabled("battery", false) && Battery.available
+                    containmentMask: GlobalStates.widgetEditMode ? _hitMask6 : null
+                    Item { id: _hitMask6; x: -30; y: -260; width: (parent?.width ?? 0) + 60; height: (parent?.height ?? 0) + 300 }
                     sourceComponent: BatteryWidget {
                         widgetIndex: 5
                         screenWidth: bgRoot.screen.width
@@ -1445,6 +1501,8 @@ Scope {
 
                     Loader {
                         id: customWidgetLoader
+                        containmentMask: GlobalStates.widgetEditMode ? _hitMask7 : null
+                        Item { id: _hitMask7; x: -30; y: -260; width: (parent?.width ?? 0) + 60; height: (parent?.height ?? 0) + 300 }
                         required property var modelData
                         required property int index
 

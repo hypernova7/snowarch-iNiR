@@ -49,37 +49,27 @@ AbstractBackgroundWidget {
 
     // Edit mode quick controls — toggle each section
     editPopoverContent: Component {
-        Item {
-            implicitWidth: _col.implicitWidth
-            implicitHeight: _col.implicitHeight
-            Column {
-                id: _col
-                spacing: 4
-                Repeater {
-                    model: [
-                        { label: "Time", key: "showTime", on: root.cfgTime },
-                        { label: "Weather", key: "showWeather", on: root.cfgWeather },
-                        { label: "Battery", key: "showBattery", on: root.cfgBattery },
-                        { label: "Network", key: "showNetwork", on: root.cfgNetwork },
-                        { label: "Volume", key: "showVolume", on: root.cfgVolume }
-                    ]
-                    RippleButton {
-                        required property var modelData
-                        width: 100; height: 28
-                        buttonRadius: Appearance.rounding.small
-                        toggled: modelData.on
-                        colBackground: toggled ? ColorUtils.applyAlpha(Appearance.colors.colPrimary, 0.16) : "transparent"
-                        colBackgroundHover: ColorUtils.applyAlpha(Appearance.colors.colOnLayer2, 0.08)
-                        colRipple: ColorUtils.applyAlpha(Appearance.colors.colPrimary, 0.12)
-                        downAction: () => Config.setNestedValue(
-                            "background.widgets.custom.example-widget." + modelData.key, !modelData.on)
-                        contentItem: StyledText {
-                            anchors.centerIn: parent
-                            text: modelData.label
-                            color: Appearance.colors.colOnLayer2
-                            font.pixelSize: Appearance.font.pixelSize.small
-                        }
-                    }
+        GridLayout {
+            columns: 3
+            columnSpacing: 4
+            rowSpacing: 4
+            Repeater {
+                model: [
+                    { label: "Time", icon: "schedule", key: "showTime", on: root.cfgTime },
+                    { label: "Weather", icon: "wb_sunny", key: "showWeather", on: root.cfgWeather },
+                    { label: "Battery", icon: "battery_full", key: "showBattery", on: root.cfgBattery },
+                    { label: "Network", icon: "wifi", key: "showNetwork", on: root.cfgNetwork },
+                    { label: "Volume", icon: "volume_up", key: "showVolume", on: root.cfgVolume }
+                ]
+                SelectionGroupButton {
+                    required property var modelData
+                    Layout.fillWidth: true
+                    leftmost: true; rightmost: true
+                    buttonIcon: modelData.icon
+                    buttonText: modelData.label
+                    toggled: modelData.on
+                    onClicked: Config.setNestedValue(
+                        "background.widgets.custom.example-widget." + modelData.key, !modelData.on)
                 }
             }
         }
@@ -135,7 +125,7 @@ AbstractBackgroundWidget {
                 color: ColorUtils.applyAlpha(root.colText, 0.55); anchors.verticalCenter: parent.verticalCenter
             }
             StyledText {
-                text: (Weather.data.temp ?? "--") + (Weather.useUSCS ? "\u00b0F" : "\u00b0C")
+                text: Weather.data.temp ?? "--"
                 font.pixelSize: root.fs; color: root.colText; anchors.verticalCenter: parent.verticalCenter
             }
         }

@@ -673,6 +673,7 @@ Singleton {
                 property JsonObject widgets: JsonObject {
                     property JsonObject clock: JsonObject {
                         property bool enable: true
+                        property bool locked: false
                         property string placementStrategy: "leastBusy" // "free", "leastBusy", "mostBusy"
                         property real x: 100
                         property real y: 100
@@ -724,6 +725,7 @@ Singleton {
                     }
                     property JsonObject weather: JsonObject {
                         property bool enable: false
+                        property bool locked: false
                         property string placementStrategy: "free" // "free", "leastBusy", "mostBusy"
                         property real x: 400
                         property real y: 100
@@ -745,6 +747,7 @@ Singleton {
 
                     property JsonObject mediaControls: JsonObject {
                         property bool enable: false
+                        property bool locked: false
                         property string placementStrategy: "free" // "free", "leastBusy", "mostBusy"
                         property string playerPreset: "full" // "full", "compact", "minimal", "albumart", "visualizer", "classic"
                         property real x: 240
@@ -757,6 +760,7 @@ Singleton {
 
                     property JsonObject visualizer: JsonObject {
                         property bool enable: false
+                        property bool locked: false
                         property string placementStrategy: "free"
                         property int barCount: 48
                         property int barSpacing: 2
@@ -781,6 +785,7 @@ Singleton {
 
                     property JsonObject systemMonitor: JsonObject {
                         property bool enable: false
+                        property bool locked: false
                         property string placementStrategy: "free"
                         property string displayMode: "bars"
                         property int barCount: 32
@@ -791,6 +796,8 @@ Singleton {
                         property bool showCpu: true
                         property bool showMemory: true
                         property bool showGpu: true
+                        property bool showTemp: false
+                        property bool showDisk: false
                         property bool showLabels: true
                         property int contentWidth: 320
                         property int contentHeight: 120
@@ -811,6 +818,7 @@ Singleton {
 
                     property JsonObject battery: JsonObject {
                         property bool enable: false
+                        property bool locked: false
                         property string placementStrategy: "free"
                         property string displayMode: "ring"
                         property bool showTime: true

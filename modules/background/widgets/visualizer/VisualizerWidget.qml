@@ -25,18 +25,14 @@ AbstractBackgroundWidget {
     resizableAxes: ({ width: "contentWidth", height: "contentHeight" })
 
     editPopoverContent: Component {
-        Item {
-            implicitWidth: _vizPopRow.implicitWidth
-            implicitHeight: _vizPopRow.implicitHeight
-            Row {
-                id: _vizPopRow
-                spacing: 8
-                StyledText { text: Translation.tr("Bars"); color: Appearance.colors.colOnLayer2; font.pixelSize: Appearance.font.pixelSize.small; anchors.verticalCenter: parent.verticalCenter }
-                StyledSpinBox {
-                    from: 8; to: 128; stepSize: 4
-                    value: Config.getNestedValue("background.widgets.visualizer.barCount", 48)
-                    onValueModified: Config.setNestedValue("background.widgets.visualizer.barCount", value)
-                }
+        Row {
+            spacing: 8
+            MaterialSymbol { text: "equalizer"; iconSize: 14; color: ColorUtils.applyAlpha(Appearance.colors.colOnLayer2, 0.5); anchors.verticalCenter: parent.verticalCenter }
+            StyledText { text: Translation.tr("Bars"); color: ColorUtils.applyAlpha(Appearance.colors.colOnLayer2, 0.7); font.pixelSize: Appearance.font.pixelSize.smaller; font.weight: Font.Medium; anchors.verticalCenter: parent.verticalCenter }
+            StyledSpinBox {
+                from: 8; to: 128; stepSize: 4
+                value: Config.getNestedValue("background.widgets.visualizer.barCount", 48)
+                onValueModified: Config.setNestedValue("background.widgets.visualizer.barCount", value)
             }
         }
     }

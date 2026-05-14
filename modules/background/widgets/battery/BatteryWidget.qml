@@ -27,39 +27,37 @@ AbstractBackgroundWidget {
     resizeMinHeight: 40
 
     editPopoverContent: Component {
-        Item {
-            implicitWidth: _battCol.implicitWidth
-            implicitHeight: _battCol.implicitHeight
-            Column {
-                id: _battCol
-                spacing: 6
-                Row {
-                    spacing: 4
-                    Repeater {
-                        model: [{ label: "Ring", value: "ring" }, { label: "Bars", value: "bars" }, { label: "Pill", value: "pill" }]
-                        RippleButton {
-                            required property var modelData
-                            width: 60; height: 28
-                            buttonRadius: Appearance.rounding.small
-                            toggled: root.displayMode === modelData.value
-                            colBackground: toggled ? ColorUtils.applyAlpha(Appearance.colors.colPrimary, 0.16) : "transparent"
-                            colBackgroundHover: ColorUtils.applyAlpha(Appearance.colors.colOnLayer2, 0.08)
-                            colRipple: ColorUtils.applyAlpha(Appearance.colors.colPrimary, 0.12)
-                            downAction: () => Config.setNestedValue("background.widgets.battery.displayMode", modelData.value)
-                            contentItem: StyledText { anchors.centerIn: parent; text: modelData.label; color: Appearance.colors.colOnLayer2; font.pixelSize: Appearance.font.pixelSize.small }
-                        }
+        Column {
+            spacing: 6
+            GridLayout {
+                columns: 3
+                columnSpacing: 4
+                rowSpacing: 4
+                Layout.alignment: Qt.AlignHCenter
+                Repeater {
+                    model: [
+                        { label: "Ring", icon: "donut_large", value: "ring" },
+                        { label: "Bars", icon: "bar_chart", value: "bars" },
+                        { label: "Pill", icon: "horizontal_rule", value: "pill" }
+                    ]
+                    SelectionGroupButton {
+                        required property var modelData
+                        Layout.fillWidth: true
+                        leftmost: true; rightmost: true
+                        buttonIcon: modelData.icon
+                        buttonText: modelData.label
+                        toggled: root.displayMode === modelData.value
+                        onClicked: Config.setNestedValue("background.widgets.battery.displayMode", modelData.value)
                     }
                 }
-                RippleButton {
-                    width: 120; height: 28
-                    buttonRadius: Appearance.rounding.small
-                    toggled: root.showTimeEstimate
-                    colBackground: toggled ? ColorUtils.applyAlpha(Appearance.colors.colPrimary, 0.16) : "transparent"
-                    colBackgroundHover: ColorUtils.applyAlpha(Appearance.colors.colOnLayer2, 0.08)
-                    colRipple: ColorUtils.applyAlpha(Appearance.colors.colPrimary, 0.12)
-                    downAction: () => Config.setNestedValue("background.widgets.battery.showTime", !root.showTimeEstimate)
-                    contentItem: StyledText { anchors.centerIn: parent; text: "Show time"; color: Appearance.colors.colOnLayer2; font.pixelSize: Appearance.font.pixelSize.small }
-                }
+            }
+            SelectionGroupButton {
+                Layout.alignment: Qt.AlignHCenter
+                leftmost: true; rightmost: true
+                buttonIcon: "timer"
+                buttonText: "Show time"
+                toggled: root.showTimeEstimate
+                onClicked: Config.setNestedValue("background.widgets.battery.showTime", !root.showTimeEstimate)
             }
         }
     }

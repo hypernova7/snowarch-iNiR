@@ -32,26 +32,27 @@ AbstractBackgroundWidget {
     resizeMinHeight: 80
 
     editPopoverContent: Component {
-        Item {
-            implicitWidth: 200
-            implicitHeight: _mediaFlow.implicitHeight
-            Flow {
-                id: _mediaFlow
-                width: parent.width
-                spacing: 4
-                Repeater {
-                    model: [{ label: "Full", value: "full" }, { label: "Compact", value: "compact" }, { label: "Minimal", value: "minimal" }, { label: "Album", value: "albumart" }, { label: "Viz", value: "visualizer" }, { label: "Classic", value: "classic" }]
-                    RippleButton {
-                        required property var modelData
-                        width: 62; height: 28
-                        buttonRadius: Appearance.rounding.small
-                        toggled: root.selectedPreset === modelData.value
-                        colBackground: toggled ? ColorUtils.applyAlpha(Appearance.colors.colPrimary, 0.16) : "transparent"
-                        colBackgroundHover: ColorUtils.applyAlpha(Appearance.colors.colOnLayer2, 0.08)
-                        colRipple: ColorUtils.applyAlpha(Appearance.colors.colPrimary, 0.12)
-                        downAction: () => Config.setNestedValue("background.widgets.mediaControls.playerPreset", modelData.value)
-                        contentItem: StyledText { anchors.centerIn: parent; text: modelData.label; color: Appearance.colors.colOnLayer2; font.pixelSize: Appearance.font.pixelSize.small }
-                    }
+        GridLayout {
+            columns: 3
+            columnSpacing: 4
+            rowSpacing: 4
+            Repeater {
+                model: [
+                    { label: "Full", icon: "view_agenda", value: "full" },
+                    { label: "Compact", icon: "view_compact", value: "compact" },
+                    { label: "Minimal", icon: "minimize", value: "minimal" },
+                    { label: "Album", icon: "album", value: "albumart" },
+                    { label: "Viz", icon: "graphic_eq", value: "visualizer" },
+                    { label: "Classic", icon: "music_note", value: "classic" }
+                ]
+                SelectionGroupButton {
+                    required property var modelData
+                    Layout.fillWidth: true
+                    leftmost: true; rightmost: true
+                    buttonIcon: modelData.icon
+                    buttonText: modelData.label
+                    toggled: root.selectedPreset === modelData.value
+                    onClicked: Config.setNestedValue("background.widgets.mediaControls.playerPreset", modelData.value)
                 }
             }
         }

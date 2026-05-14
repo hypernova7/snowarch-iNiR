@@ -29,6 +29,9 @@ AbstractWidget {
     animateXPos: false
     animateYPos: false
 
+    // ── Per-widget lock (prevent accidental drag/resize) ──
+    readonly property bool locked: Boolean(root._readConfigKey("locked") ?? false)
+
     // ── Per-widget customization (inherited by all widgets) ──
     readonly property real _baseScale: {
         const v = Number(root._readConfigKey("widgetScale") ?? 100);
@@ -232,7 +235,7 @@ AbstractWidget {
 
     // In edit mode, allow dragging regardless of strategy (user can reposition freely)
     readonly property bool _isZonePlacement: root._snapZones.indexOf(root.placementStrategy) >= 0
-    draggable: (placementStrategy === "free" || GlobalStates.widgetEditMode) && !GlobalStates.screenLocked
+    draggable: (placementStrategy === "free" || GlobalStates.widgetEditMode) && !GlobalStates.screenLocked && !root.locked
     function syncFreePositionFromConfig(): void {
         if (!Config.ready) return;
         if (root.placementStrategy !== "free") return;
@@ -319,7 +322,28 @@ AbstractWidget {
             spacing: 2
 
             RippleButton {
+                id: lockBtn
+                width: 32; height: 32
+                buttonRadius: Appearance.rounding.full
+                toggled: root.locked
+                colBackground: "transparent"
+                colBackgroundHover: ColorUtils.applyAlpha(Appearance.colors.colOnLayer2, 0.08)
+                colBackgroundToggled: ColorUtils.applyAlpha(Appearance.colors.colError, 0.14)
+                colBackgroundToggledHover: ColorUtils.applyAlpha(Appearance.colors.colError, 0.22)
+                colRipple: ColorUtils.applyAlpha(Appearance.colors.colOnLayer2, 0.12)
+                downAction: () => Config.setNestedValue(root._configPath + ".locked", !root.locked)
+                contentItem: MaterialSymbol {
+                    anchors.centerIn: parent
+                    text: root.locked ? "lock" : "lock_open"
+                    iconSize: 18
+                    color: root.locked ? Appearance.colors.colError : Appearance.colors.colOnLayer2
+                }
+                StyledToolTip { text: root.locked ? Translation.tr("Unlock position") : Translation.tr("Lock position") }
+            }
+
+            RippleButton {
                 id: snapZoneBtn
+                visible: !root.locked
                 width: 32; height: 32
                 buttonRadius: Appearance.rounding.full
                 toggled: root._isZonePlacement
@@ -342,6 +366,7 @@ AbstractWidget {
 
             RippleButton {
                 id: resetBtn
+                visible: !root.locked
                 width: 32; height: 32
                 buttonRadius: Appearance.rounding.full
                 colBackground: "transparent"
@@ -358,6 +383,7 @@ AbstractWidget {
             }
 
             Rectangle {
+                visible: !root.locked
                 width: 1; height: 20
                 anchors.verticalCenter: parent.verticalCenter
                 color: ColorUtils.applyAlpha(Appearance.colors.colOnLayer2, 0.15)
@@ -365,7 +391,7 @@ AbstractWidget {
 
             RippleButton {
                 id: popoverBtn
-                visible: root._effectivePopover !== null
+                visible: root._effectivePopover !== null && !root.locked
                 width: 32; height: 32
                 buttonRadius: Appearance.rounding.full
                 toggled: editPopoverPanel.visible
@@ -437,6 +463,20 @@ AbstractWidget {
         }
     }
 
+    // ── Edit mode widget name label ─────────────────────────
+    StyledText {
+        z: 200
+        visible: GlobalStates.widgetEditMode
+        anchors {
+            horizontalCenter: parent.horizontalCenter
+            top: parent.bottom
+            topMargin: 6
+        }
+        text: root.configEntryName.split(".").pop()
+        font.pixelSize: Appearance.font.pixelSize.smaller
+        color: ColorUtils.applyAlpha(Appearance.colors.colOnLayer0, 0.5)
+    }
+
     // ── Edit mode selection outline ──────────────────────────
     Rectangle {
         z: 199
@@ -445,12 +485,17 @@ AbstractWidget {
         visible: GlobalStates.widgetEditMode
         color: "transparent"
         radius: Appearance.rounding.small + 4
-        border { width: 1.5; color: ColorUtils.applyAlpha(Appearance.colors.colPrimary, 0.4) }
+        border {
+            width: root.locked ? 2 : 1.5
+            color: root.locked
+                ? ColorUtils.applyAlpha(Appearance.colors.colError, 0.35)
+                : ColorUtils.applyAlpha(Appearance.colors.colPrimary, 0.4)
+        }
     }
 
     // ── Edit mode resize handles ─────────────────────────────
     readonly property bool _hasResize: Object.keys(root.resizableAxes).length > 0
-    readonly property bool _resizeVisible: GlobalStates.widgetEditMode && root._hasResize
+    readonly property bool _resizeVisible: GlobalStates.widgetEditMode && root._hasResize && !root.locked
 
     // Resize handle component — small draggable square at edges/corners
     component ResizeHandle: Rectangle {

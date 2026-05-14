@@ -15,7 +15,7 @@ AbstractBackgroundWidget {
     id: root
 
     configEntryName: "systemMonitor"
-    defaultConfig: ({ placementStrategy: "free", preset: "default", displayMode: "bars", showCpu: true, showMemory: true, showGpu: true, showLabels: true, contentWidth: 320, contentHeight: 120, dim: 0, widgetScale: 100, widgetOpacity: 100, showBackground: true, showBorder: true, colorMode: "auto", x: 50, y: 400 })
+    defaultConfig: ({ placementStrategy: "free", preset: "default", displayMode: "bars", showCpu: true, showMemory: true, showGpu: true, showTemp: false, showDisk: false, showLabels: true, contentWidth: 320, contentHeight: 120, dim: 0, widgetScale: 100, widgetOpacity: 100, showBackground: true, showBorder: true, colorMode: "auto", x: 50, y: 400 })
 
     implicitWidth: Math.round((Config.getNestedValue("background.widgets.systemMonitor.contentWidth", 320)) * scaleFactor)
     implicitHeight: Math.round((Config.getNestedValue("background.widgets.systemMonitor.contentHeight", 120)) * scaleFactor)
@@ -26,53 +26,52 @@ AbstractBackgroundWidget {
 
     // ── Popover: mode + resource toggles ──
     editPopoverContent: Component {
-        Item {
-            implicitWidth: _sysMonCol.implicitWidth
-            implicitHeight: _sysMonCol.implicitHeight
-            Column {
-                id: _sysMonCol
-                spacing: 6
-                Row {
-                    spacing: 4
-                    Repeater {
-                        model: [
-                            { label: "Bars", value: "bars" },
-                            { label: "Graph", value: "graph" },
-                            { label: "Rings", value: "rings" },
-                            { label: "Text", value: "text" }
-                        ]
-                        RippleButton {
-                            required property var modelData
-                            width: 56; height: 28
-                            buttonRadius: Appearance.rounding.small
-                            toggled: root.displayMode === modelData.value
-                            colBackground: toggled ? ColorUtils.applyAlpha(Appearance.colors.colPrimary, 0.16) : "transparent"
-                            colBackgroundHover: ColorUtils.applyAlpha(Appearance.colors.colOnLayer2, 0.08)
-                            colRipple: ColorUtils.applyAlpha(Appearance.colors.colPrimary, 0.12)
-                            downAction: () => Config.setNestedValue("background.widgets.systemMonitor.displayMode", modelData.value)
-                            contentItem: StyledText { anchors.centerIn: parent; text: modelData.label; color: Appearance.colors.colOnLayer2; font.pixelSize: Appearance.font.pixelSize.small }
-                        }
+        Column {
+            spacing: 6
+            GridLayout {
+                columns: 2
+                columnSpacing: 4
+                rowSpacing: 4
+                Layout.alignment: Qt.AlignHCenter
+                Repeater {
+                    model: [
+                        { label: "Bars", icon: "bar_chart", value: "bars" },
+                        { label: "Graph", icon: "show_chart", value: "graph" },
+                        { label: "Rings", icon: "donut_large", value: "rings" },
+                        { label: "Text", icon: "text_fields", value: "text" }
+                    ]
+                    SelectionGroupButton {
+                        required property var modelData
+                        Layout.fillWidth: true
+                        leftmost: true; rightmost: true
+                        buttonIcon: modelData.icon
+                        buttonText: modelData.label
+                        toggled: root.displayMode === modelData.value
+                        onClicked: Config.setNestedValue("background.widgets.systemMonitor.displayMode", modelData.value)
                     }
                 }
-                Row {
-                    spacing: 8
-                    Repeater {
-                        model: [
-                            { label: "CPU", key: "showCpu", active: root.showCpu },
-                            { label: "MEM", key: "showMemory", active: root.showMemory },
-                            { label: "GPU", key: "showGpu", active: root.showGpu }
-                        ]
-                        RippleButton {
-                            required property var modelData
-                            width: 56; height: 28
-                            buttonRadius: Appearance.rounding.small
-                            toggled: modelData.active
-                            colBackground: toggled ? ColorUtils.applyAlpha(Appearance.colors.colPrimary, 0.16) : "transparent"
-                            colBackgroundHover: ColorUtils.applyAlpha(Appearance.colors.colOnLayer2, 0.08)
-                            colRipple: ColorUtils.applyAlpha(Appearance.colors.colPrimary, 0.12)
-                            downAction: () => Config.setNestedValue("background.widgets.systemMonitor." + modelData.key, !modelData.active)
-                            contentItem: StyledText { anchors.centerIn: parent; text: modelData.label; color: Appearance.colors.colOnLayer2; font.pixelSize: Appearance.font.pixelSize.small }
-                        }
+            }
+            GridLayout {
+                columns: 3
+                columnSpacing: 4
+                rowSpacing: 4
+                Layout.alignment: Qt.AlignHCenter
+                Repeater {
+                    model: [
+                        { label: "CPU", icon: "memory", key: "showCpu", active: root.showCpu },
+                        { label: "RAM", icon: "storage", key: "showMemory", active: root.showMemory },
+                        { label: "GPU", icon: "developer_board", key: "showGpu", active: root.showGpu },
+                        { label: "Temp", icon: "thermostat", key: "showTemp", active: root.showTemp },
+                        { label: "Disk", icon: "hard_drive", key: "showDisk", active: root.showDisk }
+                    ]
+                    SelectionGroupButton {
+                        required property var modelData
+                        Layout.fillWidth: true
+                        leftmost: true; rightmost: true
+                        buttonIcon: modelData.icon
+                        buttonText: modelData.label
+                        toggled: modelData.active
+                        onClicked: Config.setNestedValue("background.widgets.systemMonitor." + modelData.key, !modelData.active)
                     }
                 }
             }
@@ -85,6 +84,8 @@ AbstractBackgroundWidget {
     readonly property bool showCpu: Config.getNestedValue("background.widgets.systemMonitor.showCpu", true)
     readonly property bool showMemory: Config.getNestedValue("background.widgets.systemMonitor.showMemory", true)
     readonly property bool showGpu: Config.getNestedValue("background.widgets.systemMonitor.showGpu", true)
+    readonly property bool showTemp: Config.getNestedValue("background.widgets.systemMonitor.showTemp", false)
+    readonly property bool showDisk: Config.getNestedValue("background.widgets.systemMonitor.showDisk", false)
     readonly property bool showLabels: Config.getNestedValue("background.widgets.systemMonitor.showLabels", true)
     readonly property real trackAlpha: Config.getNestedValue("background.widgets.systemMonitor.trackAlpha", 0.08)
     readonly property real fillOpacity: Config.getNestedValue("background.widgets.systemMonitor.fillOpacity", 0.7)
@@ -96,13 +97,43 @@ AbstractBackgroundWidget {
         return Math.max(0, Math.min(1, Number.isFinite(n) ? n / 100 : 0));
     }
 
-    // ── Shared resource model builder ──
+    // ── Static resource model (metadata only — no live values) ──
     readonly property var _resourceModel: {
         const items = [];
-        if (root.showCpu) items.push({ icon: "memory", label: "CPU", value: ResourceUsage.cpuUsage, color: root.cpuColor });
-        if (root.showMemory) items.push({ icon: "storage", label: "RAM", value: ResourceUsage.memoryUsedPercentage, color: root.memColor });
-        if (root.showGpu) items.push({ icon: "developer_board", label: "GPU", value: ResourceUsage.gpuUsage, color: root.gpuColor });
+        if (root.showCpu) items.push({ icon: "memory", label: "CPU", key: "cpu" });
+        if (root.showMemory) items.push({ icon: "storage", label: "RAM", key: "mem" });
+        if (root.showGpu) items.push({ icon: "developer_board", label: "GPU", key: "gpu" });
+        if (root.showTemp) items.push({ icon: "thermostat", label: "Temp", key: "temp" });
+        if (root.showDisk) items.push({ icon: "hard_drive", label: "Disk", key: "disk" });
         return items;
+    }
+
+    // Live value accessor — delegates use this to read current value
+    function _getValue(key: string): real {
+        switch (key) {
+            case "cpu": return ResourceUsage.cpuUsage;
+            case "mem": return ResourceUsage.memoryUsedPercentage;
+            case "gpu": return ResourceUsage.gpuUsage;
+            case "temp": return ResourceUsage.tempPercentage;
+            case "disk": return ResourceUsage.diskUsedPercentage;
+            default: return 0;
+        }
+    }
+
+    function _getColor(key: string): color {
+        switch (key) {
+            case "cpu": return root.cpuColor;
+            case "mem": return root.memColor;
+            case "gpu": return root.gpuColor;
+            case "temp": return root.tempColor;
+            case "disk": return root.diskColor;
+            default: return root.cpuColor;
+        }
+    }
+
+    function _getDisplayText(key: string): string {
+        if (key === "temp") return ResourceUsage.maxTemp + "°C";
+        return Math.round(root._getValue(key) * 100) + "%";
     }
 
     // ── Style tokens ──
@@ -114,14 +145,20 @@ AbstractBackgroundWidget {
         : Appearance.inirEverywhere ? Appearance.inir.colPrimary
         : Appearance.auroraEverywhere ? Appearance.m3colors.m3primary
         : Appearance.colors.colPrimary
-    readonly property color memColor: Appearance.angelEverywhere ? Appearance.angel.colSecondaryContainer
-        : Appearance.inirEverywhere ? Appearance.inir.colSecondaryContainer
-        : Appearance.auroraEverywhere ? Appearance.m3colors.m3secondaryContainer
-        : Appearance.colors.colSecondaryContainer
+    readonly property color memColor: Appearance.angelEverywhere ? Appearance.angel.colSecondary
+        : Appearance.inirEverywhere ? Appearance.inir.colSecondary
+        : Appearance.auroraEverywhere ? Appearance.m3colors.m3secondary
+        : Appearance.colors.colSecondary
     readonly property color gpuColor: Appearance.angelEverywhere ? Appearance.angel.colTertiary
         : Appearance.inirEverywhere ? Appearance.inir.colTertiary
         : Appearance.auroraEverywhere ? Appearance.m3colors.m3tertiary
         : Appearance.colors.colTertiary
+    readonly property color tempColor: Appearance.inirEverywhere ? Appearance.inir.colError
+        : Appearance.colors.colError
+    readonly property color diskColor: Appearance.colors.colTertiaryContainer
+
+    // Animation duration for smooth value transitions
+    readonly property int _animDuration: 1200
 
     Component.onCompleted: if (root._active) ResourceUsage.keepAlive()
     Component.onDestruction: if (root._active) ResourceUsage.releaseKeepAlive()
@@ -165,11 +202,14 @@ AbstractBackgroundWidget {
                 Layout.fillHeight: true
                 spacing: Appearance.sizes.spacingSmall ?? 4
 
+                readonly property real _liveValue: root._getValue(modelData.key)
+                readonly property color _liveColor: root._getColor(modelData.key)
+
                 MaterialSymbol {
                     visible: root.showLabels
                     text: barRow.modelData.icon
                     iconSize: Appearance.font.pixelSize.small
-                    color: barRow.modelData.color
+                    color: barRow._liveColor
                 }
 
                 Item {
@@ -179,33 +219,35 @@ AbstractBackgroundWidget {
                     Rectangle {
                         anchors.fill: parent
                         radius: Appearance.rounding.verysmall
-                        color: ColorUtils.applyAlpha(barRow.modelData.color, root.trackAlpha)
+                        color: ColorUtils.applyAlpha(barRow._liveColor, root.trackAlpha)
                     }
 
                     Rectangle {
-                        width: parent.width * Math.min(1, barRow.modelData.value)
+                        id: barFill
+                        property real targetWidth: parent.width * Math.min(1, barRow._liveValue)
+                        width: targetWidth
                         height: parent.height
                         radius: Appearance.rounding.verysmall
-                        color: barRow.modelData.color
+                        color: barRow._liveColor
                         opacity: root.fillOpacity
 
                         Behavior on width {
                             enabled: Appearance.animationsEnabled
-                            NumberAnimation { duration: Appearance.animation.elementResize.duration; easing.type: Easing.InOutCubic }
+                            NumberAnimation { duration: root._animDuration; easing.type: Easing.OutCubic }
                         }
                     }
                 }
 
                 StyledText {
                     visible: root.showLabels
-                    text: Math.round(barRow.modelData.value * 100) + "%"
+                    text: root._getDisplayText(barRow.modelData.key)
                     color: ColorUtils.applyAlpha(root.colText, root.fillOpacity)
                     font {
                         pixelSize: Appearance.font.pixelSize.smaller
                         family: Appearance.font.family.numbers
                     }
                     horizontalAlignment: Text.AlignRight
-                    Layout.preferredWidth: 32
+                    Layout.preferredWidth: barRow.modelData.key === "temp" ? 40 : 32
                 }
             }
         }
@@ -236,12 +278,12 @@ AbstractBackgroundWidget {
                     MaterialSymbol {
                         text: modelData.icon
                         iconSize: Appearance.font.pixelSize.smaller
-                        color: modelData.color
+                        color: root._getColor(modelData.key)
                         anchors.verticalCenter: parent.verticalCenter
                     }
                     StyledText {
-                        text: Math.round(modelData.value * 100) + "%"
-                        color: modelData.color
+                        text: root._getDisplayText(modelData.key)
+                        color: root._getColor(modelData.key)
                         font { pixelSize: Appearance.font.pixelSize.smaller; family: Appearance.font.family.numbers }
                         anchors.verticalCenter: parent.verticalCenter
                     }
@@ -330,6 +372,15 @@ AbstractBackgroundWidget {
                     Math.round((root.height - root._innerMargin * 2 - (root.showLabels ? 20 : 0)) * 0.85),
                     Math.round((root.width - root._innerMargin * 2) / Math.max(1, root._resourceModel.length) - (Appearance.sizes.spacingNormal ?? 8))
                 )
+                readonly property real _liveValue: root._getValue(modelData.key)
+                readonly property color _liveColor: root._getColor(modelData.key)
+
+                // Smoothly interpolated value for display
+                property real _animatedValue: _liveValue
+                Behavior on _animatedValue {
+                    enabled: Appearance.animationsEnabled
+                    NumberAnimation { duration: root._animDuration; easing.type: Easing.OutCubic }
+                }
 
                 Item {
                     width: ringCol._ringSize
@@ -339,24 +390,19 @@ AbstractBackgroundWidget {
                     CircularProgress {
                         anchors.centerIn: parent
                         implicitSize: parent.width
-                        lineWidth: Math.max(2, Math.round(parent.width * 0.08))
-                        value: ringCol.modelData.value
-                        colPrimary: ringCol.modelData.color
-                        colSecondary: ColorUtils.applyAlpha(ringCol.modelData.color, root.trackAlpha)
-
-                        Behavior on value {
-                            enabled: Appearance.animationsEnabled
-                            NumberAnimation { duration: Appearance.animation.elementResize.duration; easing.type: Easing.InOutCubic }
-                        }
+                        lineWidth: Math.max(3, Math.round(parent.width * 0.09))
+                        value: ringCol._animatedValue
+                        colPrimary: ringCol._liveColor
+                        colSecondary: ColorUtils.applyAlpha(ringCol._liveColor, root.trackAlpha + 0.04)
                     }
 
-                    // Percentage inside the ring
+                    // Percentage/value inside the ring
                     StyledText {
                         anchors.centerIn: parent
-                        text: Math.round(ringCol.modelData.value * 100)
-                        color: ringCol.modelData.color
+                        text: ringCol.modelData.key === "temp" ? ResourceUsage.maxTemp + "°" : Math.round(ringCol._animatedValue * 100)
+                        color: ringCol._liveColor
                         font {
-                            pixelSize: Math.max(10, Math.round(ringCol._ringSize * 0.28))
+                            pixelSize: Math.max(10, Math.round(ringCol._ringSize * 0.26))
                             family: Appearance.font.family.numbers
                             weight: Font.DemiBold
                         }
@@ -401,10 +447,11 @@ AbstractBackgroundWidget {
             Rectangle {
                 id: textChip
                 required property var modelData
+                readonly property color _liveColor: root._getColor(modelData.key)
                 width: chipRow.implicitWidth + 12
                 height: chipRow.implicitHeight + 8
                 radius: Appearance.rounding.small
-                color: ColorUtils.applyAlpha(textChip.modelData.color, root.trackAlpha)
+                color: ColorUtils.applyAlpha(textChip._liveColor, root.trackAlpha)
 
                 Row {
                     id: chipRow
@@ -414,7 +461,7 @@ AbstractBackgroundWidget {
                     MaterialSymbol {
                         text: textChip.modelData.icon
                         iconSize: Math.round(Appearance.font.pixelSize.normal * root.scaleFactor)
-                        color: textChip.modelData.color
+                        color: textChip._liveColor
                         anchors.verticalCenter: parent.verticalCenter
                     }
 
@@ -429,8 +476,8 @@ AbstractBackgroundWidget {
                     }
 
                     StyledText {
-                        text: Math.round(textChip.modelData.value * 100) + "%"
-                        color: textChip.modelData.color
+                        text: root._getDisplayText(textChip.modelData.key)
+                        color: textChip._liveColor
                         font {
                             pixelSize: Math.round(Appearance.font.pixelSize.normal * root.scaleFactor)
                             family: Appearance.font.family.numbers
