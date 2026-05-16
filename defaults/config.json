@@ -411,6 +411,7 @@
             "visualizer": {
                 "enable": false,
                 "placementStrategy": "free",
+                "vizType": "bars",
                 "barCount": 48,
                 "barSpacing": 2,
                 "dim": 0,
@@ -425,7 +426,6 @@
                 "colorMode": "auto",
                 "x": 100,
                 "y": 100,
-                "preset": "default",
                 "barRadius": 2,
                 "barMinHeight": 1,
                 "contentWidth": 304,

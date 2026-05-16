@@ -784,13 +784,13 @@ Singleton {
                         property bool enable: false
                         property bool locked: false
                         property string placementStrategy: "free"
+                        property string vizType: "bars"
                         property int barCount: 48
                         property int barSpacing: 2
                         property int barRadius: 2
                         property int barMinHeight: 1
                         property int contentWidth: 304
                         property int contentHeight: 104
-                        property string preset: "default"
                         property int dim: 0
                         property int widgetScale: 100
                         property int widgetOpacity: 100

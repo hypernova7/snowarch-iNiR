@@ -15,7 +15,7 @@ AbstractBackgroundWidget {
     id: root
 
     configEntryName: "visualizer"
-    defaultConfig: ({ placementStrategy: "free", preset: "default", barCount: 48, barSpacing: 2, barRadius: 2, barMinHeight: 1, contentWidth: 304, contentHeight: 104, dim: 0, widgetScale: 100, widgetOpacity: 100, showBackground: true, showBorder: true, colorMode: "auto", x: 100, y: 100 })
+    defaultConfig: ({ placementStrategy: "free", vizType: "bars", barCount: 48, barSpacing: 2, barRadius: 2, barMinHeight: 1, contentWidth: 304, contentHeight: 104, dim: 0, widgetScale: 100, widgetOpacity: 100, showBackground: true, showBorder: true, colorMode: "auto", x: 100, y: 100 })
 
     implicitWidth: Math.round((Config.getNestedValue("background.widgets.visualizer.contentWidth", 304)) * scaleFactor)
     implicitHeight: Math.round((Config.getNestedValue("background.widgets.visualizer.contentHeight", 104)) * scaleFactor)
@@ -24,12 +24,42 @@ AbstractBackgroundWidget {
     needsColText: true
     resizableAxes: ({ width: "contentWidth", height: "contentHeight" })
 
+    readonly property string vizType: Config.getNestedValue("background.widgets.visualizer.vizType", "bars")
+
     editPopoverContent: Component {
         Row {
             spacing: 8
-            MaterialSymbol { text: "equalizer"; iconSize: 14; color: ColorUtils.applyAlpha(Appearance.colors.colOnLayer2, 0.5); anchors.verticalCenter: parent.verticalCenter }
-            StyledText { text: Translation.tr("Bars"); color: ColorUtils.applyAlpha(Appearance.colors.colOnLayer2, 0.7); font.pixelSize: Appearance.font.pixelSize.smaller; font.weight: Font.Medium; anchors.verticalCenter: parent.verticalCenter }
+            // Mode toggle
+            RippleButton {
+                width: 32; height: 32
+                buttonRadius: Appearance.rounding.full
+                colBackground: "transparent"
+                colBackgroundHover: ColorUtils.applyAlpha(Appearance.colors.colOnLayer2, 0.08)
+                colRipple: ColorUtils.applyAlpha(Appearance.colors.colOnLayer2, 0.12)
+                anchors.verticalCenter: parent.verticalCenter
+                downAction: () => {
+                    const current = Config.getNestedValue("background.widgets.visualizer.vizType", "bars");
+                    Config.setNestedValue("background.widgets.visualizer.vizType", current === "bars" ? "wave" : "bars");
+                }
+                contentItem: MaterialSymbol {
+                    anchors.centerIn: parent
+                    text: Config.getNestedValue("background.widgets.visualizer.vizType", "bars") === "wave" ? "waves" : "equalizer"
+                    iconSize: 16
+                    color: Appearance.colors.colOnLayer2
+                }
+                StyledToolTip { text: Config.getNestedValue("background.widgets.visualizer.vizType", "bars") === "wave" ? Translation.tr("Wave mode") : Translation.tr("Bars mode") }
+            }
+            // Bar count (only for bars mode)
+            StyledText {
+                visible: Config.getNestedValue("background.widgets.visualizer.vizType", "bars") === "bars"
+                text: Translation.tr("Bars")
+                color: ColorUtils.applyAlpha(Appearance.colors.colOnLayer2, 0.7)
+                font.pixelSize: Appearance.font.pixelSize.smaller
+                font.weight: Font.Medium
+                anchors.verticalCenter: parent.verticalCenter
+            }
             StyledSpinBox {
+                visible: Config.getNestedValue("background.widgets.visualizer.vizType", "bars") === "bars"
                 from: 8; to: 128; stepSize: 4
                 value: Config.getNestedValue("background.widgets.visualizer.barCount", 48)
                 onValueModified: Config.setNestedValue("background.widgets.visualizer.barCount", value)
@@ -76,8 +106,9 @@ AbstractBackgroundWidget {
         visible: root.backgroundOpacity > 0 || root.borderWidth > 0
     }
 
-    // ── Visualizer bars ────────────────────────────────────────
+    // ── Visualizer rendering ─────────────────────────────────────
     CavaVisualizer {
+        visible: root.vizType === "bars"
         anchors.fill: parent
         anchors.margins: Appearance.angelEverywhere || Appearance.inirEverywhere ? 4 : 0
         points: cavaProcess.points
@@ -86,7 +117,6 @@ AbstractBackgroundWidget {
         barSpacing: Config.getNestedValue("background.widgets.visualizer.barSpacing", 2)
         barMinHeight: Config.getNestedValue("background.widgets.visualizer.barMinHeight", 1)
         barRadius: Config.getNestedValue("background.widgets.visualizer.barRadius", 2)
-        // Multi-color visualizer: low freq = secondary, mid = primary, high = tertiary
         colorLow: Appearance.angelEverywhere ? Appearance.angel.colSecondaryContainer
             : Appearance.inirEverywhere ? Appearance.inir.colSecondaryContainer
             : Appearance.auroraEverywhere ? Appearance.m3colors.m3secondaryContainer
@@ -99,6 +129,19 @@ AbstractBackgroundWidget {
             : Appearance.inirEverywhere ? Appearance.inir.colTertiary
             : Appearance.auroraEverywhere ? Appearance.m3colors.m3tertiary
             : Appearance.colors.colTertiary
+        opacity: 1.0 - dimFactor * 0.6
+    }
+
+    WaveVisualizer {
+        visible: root.vizType === "wave"
+        anchors.fill: parent
+        anchors.margins: Appearance.angelEverywhere || Appearance.inirEverywhere ? 4 : 0
+        points: cavaProcess.points
+        live: root._active
+        color: Appearance.angelEverywhere ? Appearance.angel.colPrimary
+            : Appearance.inirEverywhere ? Appearance.inir.colPrimary
+            : Appearance.auroraEverywhere ? Appearance.m3colors.m3primary
+            : Appearance.colors.colPrimary
         opacity: 1.0 - dimFactor * 0.6
     }
 }

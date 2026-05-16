@@ -26,12 +26,18 @@ Item {
     onCfgBarsChanged: if (active) configRestart.restart()
     onCfgStereoChanged: if (active) configRestart.restart()
 
+    property bool _pendingRestart: false
+
     Timer {
         id: configRestart
         interval: 300
         onTriggered: {
-            cavaProc.running = false
-            configGen.running = true
+            if (cavaProc.running) {
+                root._pendingRestart = true
+                cavaProc.running = false
+            } else {
+                configGen.running = true
+            }
         }
     }
 
@@ -51,6 +57,7 @@ Item {
         repeat: false
         onTriggered: {
             if (!root.active) {
+                root._pendingRestart = false
                 configGen.running = false
                 cavaProc.running = false
                 root.points = []
@@ -68,11 +75,8 @@ Item {
             String(root.cfgFramerate), String(root.cfgSensitivity),
             String(root.effectiveBars), String(root.cfgStereo)]
         onExited: (code, status) => {
-            if (code === 0 && root.active) {
-                if (!cavaProc.running) {
-                    cavaProc.running = true
-                }
-            }
+            if (code === 0 && root.active)
+                cavaProc.running = true
         }
     }
 
@@ -81,7 +85,13 @@ Item {
         running: false
         command: ["cava", "-p", root.configPath]
         onRunningChanged: {
-            if (!running) root.points = []
+            if (!running) {
+                root.points = []
+                if (root._pendingRestart) {
+                    root._pendingRestart = false
+                    configGen.running = true
+                }
+            }
         }
         stdout: SplitParser {
             onRead: data => {
