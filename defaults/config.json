@@ -23,6 +23,16 @@
     },
     "appearance": {
         "globalStyle": "material",
+        "aurora": {
+            "transparency": {
+                "overlay": 0.38,
+                "subSurface": 0.52,
+                "popup": 0.42,
+                "tooltip": 0.35,
+                "layer": 0.40
+            },
+            "customPreset": ""
+        },
         "angelSubStyle": "frost",
         "extraBackgroundTint": true,
         "softenColors": true,
