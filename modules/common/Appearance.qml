@@ -515,11 +515,11 @@ Singleton {
         // Config.revision forces re-evaluation when setNestedValue writes (JS bracket notation
         // on nested JsonObjects doesn't trigger QML property notifications)
         readonly property var _cfg: { Config.revision; return Config.options?.appearance?.aurora?.transparency ?? null }
-        readonly property real overlayTransparentize: (_cfg?.overlay ?? 0.38) * _lightFactor
-        readonly property real subSurfaceTransparentize: (_cfg?.subSurface ?? 0.52) * _lightFactor
-        readonly property real popupTransparentize: (_cfg?.popup ?? 0.42) * _lightFactor
-        readonly property real tooltipTransparentize: (_cfg?.tooltip ?? 0.35) * _lightFactor
-        readonly property real layerTransparentize: (_cfg?.layer ?? 0.40) * _lightFactor
+        readonly property real overlayTransparentize: (_cfg?.overlay ?? 0.30) * _lightFactor
+        readonly property real subSurfaceTransparentize: (_cfg?.subSurface ?? 0.42) * _lightFactor
+        readonly property real popupTransparentize: (_cfg?.popup ?? 0.32) * _lightFactor
+        readonly property real tooltipTransparentize: (_cfg?.tooltip ?? 0.28) * _lightFactor
+        readonly property real layerTransparentize: (_cfg?.layer ?? 0.32) * _lightFactor
         
         // === Main Panel Overlay (Layer 0) ===
         readonly property color colOverlay: ColorUtils.transparentize(root.colors.colLayer0Base, overlayTransparentize)
@@ -699,18 +699,18 @@ Singleton {
         // Do NOT use intermediate var references — QML can't detect nested var changes.
 
         // ─── BLUR SYSTEM ───
-        readonly property real blurIntensity: Config.options?.appearance?.angel?.blur?.intensity ?? 0.25
-        readonly property real blurSaturation: Config.options?.appearance?.angel?.blur?.saturation ?? 0.15
-        readonly property real overlayOpacity: Config.options?.appearance?.angel?.blur?.overlayOpacity ?? 0.35
+        readonly property real blurIntensity: Config.options?.appearance?.angel?.blur?.intensity ?? 0.35
+        readonly property real blurSaturation: Config.options?.appearance?.angel?.blur?.saturation ?? 0.20
+        readonly property real overlayOpacity: Config.options?.appearance?.angel?.blur?.overlayOpacity ?? 0.45
         readonly property real noiseOpacity: Config.options?.appearance?.angel?.blur?.noiseOpacity ?? 0.15
         readonly property real vignetteStrength: Config.options?.appearance?.angel?.blur?.vignetteStrength ?? 0.4
 
         // ─── GLASS TRANSPARENCY (higher = more see-through) ───
         // Light mode: reduce glass transparency for better contrast on light wallpapers
         readonly property real _lightFactor: root._auroraLightMode ? 0.75 : 1.0
-        readonly property real panelTransparentize: (Config.options?.appearance?.angel?.transparency?.panel ?? 0.35) * _lightFactor
-        readonly property real cardTransparentize: (Config.options?.appearance?.angel?.transparency?.card ?? 0.50) * _lightFactor
-        readonly property real popupTransparentize: (Config.options?.appearance?.angel?.transparency?.popup ?? 0.35) * _lightFactor
+        readonly property real panelTransparentize: (Config.options?.appearance?.angel?.transparency?.panel ?? 0.28) * _lightFactor
+        readonly property real cardTransparentize: (Config.options?.appearance?.angel?.transparency?.card ?? 0.40) * _lightFactor
+        readonly property real popupTransparentize: (Config.options?.appearance?.angel?.transparency?.popup ?? 0.28) * _lightFactor
         readonly property real tooltipTransparentize: (Config.options?.appearance?.angel?.transparency?.tooltip ?? 0.25) * _lightFactor
 
         // ─── LAYER SYSTEM (glass variants derived from m3colors) ───

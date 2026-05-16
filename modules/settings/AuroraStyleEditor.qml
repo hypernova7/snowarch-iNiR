@@ -86,7 +86,7 @@ ColumnLayout {
     // ─── Preset definitions ───
     readonly property var _presets: ({
         "default": {
-            "transparency": { "overlay": 0.38, "subSurface": 0.52, "popup": 0.42, "tooltip": 0.35, "layer": 0.40 }
+            "transparency": { "overlay": 0.30, "subSurface": 0.42, "popup": 0.32, "tooltip": 0.28, "layer": 0.32 }
         },
         "frosted": {
             "transparency": { "overlay": 0.25, "subSurface": 0.35, "popup": 0.30, "tooltip": 0.25, "layer": 0.28 }
