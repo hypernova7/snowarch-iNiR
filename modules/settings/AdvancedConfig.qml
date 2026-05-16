@@ -1,4 +1,5 @@
 import QtQuick
+import QtQuick.Layouts
 import Quickshell
 import qs.services
 import qs.modules.common
@@ -284,6 +285,33 @@ ContentPage {
                     }
                     StyledToolTip {
                         text: Translation.tr("Split visualizer into left/right channels")
+                    }
+                }
+
+                RippleButton {
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: 34
+                    buttonRadius: Appearance.rounding.small
+                    colBackground: Appearance.colors.colLayer2
+                    colBackgroundHover: Appearance.colors.colLayer2Hover
+                    onClicked: {
+                        Config.setNestedValue("appearance.cava.colorSource", "theme");
+                        Config.setNestedValue("appearance.cava.gradientCount", 8);
+                        Config.setNestedValue("appearance.cava.foreground", "");
+                        Config.setNestedValue("appearance.cava.background", "");
+                        Config.setNestedValue("appearance.cava.sensitivity", 100);
+                        Config.setNestedValue("appearance.cava.bars", 0);
+                        Config.setNestedValue("appearance.cava.framerate", 60);
+                        Config.setNestedValue("appearance.cava.barWidth", 2);
+                        Config.setNestedValue("appearance.cava.barSpacing", 1);
+                        Config.setNestedValue("appearance.cava.stereo", true);
+                        colorRegenTimer.restart();
+                    }
+                    contentItem: RowLayout {
+                        anchors.centerIn: parent
+                        spacing: 5
+                        MaterialSymbol { text: "restart_alt"; iconSize: 15; color: Appearance.colors.colOnLayer1 }
+                        StyledText { text: Translation.tr("Reset to defaults"); font.pixelSize: Appearance.font.pixelSize.smaller; color: Appearance.colors.colOnLayer1 }
                     }
                 }
             }

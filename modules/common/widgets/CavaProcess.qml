@@ -11,6 +11,30 @@ Item {
     readonly property string configPath: FileUtils.trimFileProtocol(Directories.cache) + "/cava_config.txt"
     readonly property string scriptPath: FileUtils.trimFileProtocol(Directories.scriptPath) + "/cava/generate_config.sh"
 
+    // Read user config with fallbacks matching Config.qml schema defaults
+    readonly property int cfgFramerate: Config.options?.appearance?.cava?.framerate ?? 60
+    readonly property int cfgSensitivity: Config.options?.appearance?.cava?.sensitivity ?? 100
+    readonly property int cfgBars: Config.options?.appearance?.cava?.bars ?? 0
+    readonly property bool cfgStereo: Config.options?.appearance?.cava?.stereo ?? true
+
+    // Bars: 0 means auto — use 50 as a sensible widget default
+    readonly property int effectiveBars: cfgBars > 0 ? cfgBars : 50
+
+    // Restart cava when config changes while active
+    onCfgFramerateChanged: if (active) configRestart.restart()
+    onCfgSensitivityChanged: if (active) configRestart.restart()
+    onCfgBarsChanged: if (active) configRestart.restart()
+    onCfgStereoChanged: if (active) configRestart.restart()
+
+    Timer {
+        id: configRestart
+        interval: 300
+        onTriggered: {
+            cavaProc.running = false
+            configGen.running = true
+        }
+    }
+
     onActiveChanged: {
         if (active) {
             stopDebounce.stop()
@@ -40,7 +64,9 @@ Item {
     Process {
         id: configGen
         running: false
-        command: ["/usr/bin/bash", root.scriptPath, root.configPath]
+        command: ["/usr/bin/bash", root.scriptPath, root.configPath,
+            String(root.cfgFramerate), String(root.cfgSensitivity),
+            String(root.effectiveBars), String(root.cfgStereo)]
         onExited: (code, status) => {
             if (code === 0 && root.active) {
                 if (!cavaProc.running) {
