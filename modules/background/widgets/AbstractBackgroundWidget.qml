@@ -247,6 +247,8 @@ AbstractWidget {
         if (!Config.ready) return;
         if (root._isZonePlacement) {
             root.snapToZone(root.placementStrategy);
+            // Zone widgets still need color analysis at their position
+            if (root.needsColText) _placementDebounce.restart();
         } else {
             syncFreePositionFromConfig();
             refreshPlacementIfNeeded();
@@ -670,6 +672,7 @@ AbstractWidget {
         if (GlobalStates.widgetEditMode && root._isZonePlacement) {
             const nearest = root._nearestZone(newX, newY);
             root.snapToZone(nearest);
+            if (root.needsColText) _placementDebounce.restart();
             return;
         }
 
@@ -688,6 +691,8 @@ AbstractWidget {
         if (root.placementStrategy !== "free")
             updates[prefix + ".placementStrategy"] = "free";
         Config.setNestedValues(updates);
+        // Re-analyze color at new position
+        if (root.needsColText) _placementDebounce.restart();
     }
 
     // ── Inline popover for quick controls ─────────────────────
@@ -762,15 +767,27 @@ AbstractWidget {
     property bool needsColText: false
     property color dominantColor: Appearance.colors.colPrimary
     property bool dominantColorIsDark: dominantColor.hslLightness < 0.5
+    // Wallpaper region brightness (0-1, from image analysis). -1 = not yet analyzed.
+    property real regionBrightness: -1
+    readonly property bool _hasBrightness: regionBrightness >= 0
+    readonly property bool _regionIsLight: _hasBrightness ? regionBrightness > 0.5 : !dominantColorIsDark
     property color colText: {
         // colorMode override: force light/dark text
         if (root.colorMode === "light") return Qt.rgba(1, 1, 1, 0.92);
         if (root.colorMode === "dark") return Qt.rgba(0, 0, 0, 0.87);
         const onBlurredLock = (GlobalStates.screenLocked && (Config.options?.lock?.blur?.enable ?? false))
-        const baseText = Appearance.colors.colOnLayer0
+        if (onBlurredLock) return Appearance.colors.colOnLayer0;
+        // Use wallpaper brightness for contrast-aware text color
         const accent = Appearance.colors.colPrimary
-        const adaptive = ColorUtils.mix(baseText, accent, dominantColorIsDark ? 0.30 : 0.15)
-        return onBlurredLock ? baseText : adaptive;
+        if (root._regionIsLight) {
+            // Light wallpaper region → dark text
+            const dark = Qt.rgba(0, 0, 0, 0.87)
+            return ColorUtils.mix(dark, accent, 0.12)
+        } else {
+            // Dark wallpaper region → light text
+            const light = Qt.rgba(1, 1, 1, 0.92)
+            return ColorUtils.mix(light, accent, 0.15)
+        }
     }
 
     property bool wallpaperIsVideo: {
@@ -779,7 +796,11 @@ AbstractWidget {
     }
     property string wallpaperPath: wallpaperIsVideo ? (Config.options?.background?.thumbnailPath ?? "") : (Config.options?.background?.wallpaperPath ?? "")
     
-    onWallpaperPathChanged: _placementDebounce.restart()
+    onWallpaperPathChanged: {
+        root.regionBrightness = -1
+        if (root.wallpaperPath.length > 0)
+            _placementDebounce.restart()
+    }
     onPlacementStrategyChanged: {
         root.applyPlacementFromConfig();
     }
@@ -819,17 +840,24 @@ AbstractWidget {
         onTriggered: root.refreshPlacementIfNeeded()
     }
     function refreshPlacementIfNeeded() {
-        if (!Config.ready || (root.placementStrategy === "free" && root.needsColText)) return;
-        // Zone placements are purely geometric, no image analysis needed
-        if (root._isZonePlacement) return;
-        leastBusyRegionProc.wallpaperPath = root.wallpaperPath;
-        leastBusyRegionProc.running = false;
-        leastBusyRegionProc.running = true;
+        if (!Config.ready) return;
+        if (!root.wallpaperPath || root.wallpaperPath.length === 0) return;
+        // For auto-placement (leastBusy/mostBusy): full analysis (position + color)
+        if (root._isAutoPlacement) {
+            leastBusyRegionProc.wallpaperPath = root.wallpaperPath;
+            leastBusyRegionProc.running = false;
+            leastBusyRegionProc.running = true;
+            return;
+        }
+        // For free/zone widgets that need color: position-aware color-only analysis
+        if (root.needsColText) {
+            colorOnlyProc.running = false;
+            colorOnlyProc.running = true;
+        }
     }
     Process {
         id: leastBusyRegionProc
         property string wallpaperPath: root.wallpaperPath
-        // TODO: make these less arbitrary
         property int contentWidth: Math.max(1, Math.round(root.width / Math.max(root.wallpaperScale, 0.001)))
         property int contentHeight: Math.max(1, Math.round(root.height / Math.max(root.wallpaperScale, 0.001)))
         property int horizontalPadding: root._zoneMargin
@@ -843,7 +871,6 @@ AbstractWidget {
             , "--vertical-padding", verticalPadding //
             , wallpaperPath //
             , ...(root.placementStrategy === "mostBusy" ? ["--busiest"] : [])
-            // "--visual-output",
         ]
         stdout: StdioCollector {
             id: leastBusyRegionOutputCollector
@@ -853,11 +880,46 @@ AbstractWidget {
                 try {
                     const parsedContent = JSON.parse(output);
                     root.dominantColor = parsedContent.dominant_color || Appearance.colors.colPrimary;
+                    if (parsedContent.brightness !== undefined)
+                        root.regionBrightness = parsedContent.brightness / 255.0;
                     if (!root._isAutoPlacement) return;
                     root._autoPlaceX = root._clampX(parsedContent.center_x * root.wallpaperScale - root.width / 2);
                     root._autoPlaceY = root._clampY(parsedContent.center_y * root.wallpaperScale - root.height / 2);
                 } catch (e) {
                     console.warn("[Widgets] Failed to parse placement output:", e);
+                }
+            }
+        }
+    }
+    // Color-only analysis for free/zone widgets at their actual position
+    Process {
+        id: colorOnlyProc
+        property int posX: Math.max(0, Math.round(root.x / Math.max(root.wallpaperScale, 0.001)))
+        property int posY: Math.max(0, Math.round(root.y / Math.max(root.wallpaperScale, 0.001)))
+        property int contentWidth: Math.max(1, Math.round(root.width / Math.max(root.wallpaperScale, 0.001)))
+        property int contentHeight: Math.max(1, Math.round(root.height / Math.max(root.wallpaperScale, 0.001)))
+        command: [Quickshell.shellPath("scripts/images/least-busy-region-venv.sh")
+            , "--color-only"
+            , "--position-x", posX
+            , "--position-y", posY
+            , "--screen-width", Math.round(root.scaledScreenWidth)
+            , "--screen-height", Math.round(root.scaledScreenHeight)
+            , "--width", contentWidth
+            , "--height", contentHeight
+            , root.wallpaperPath
+        ]
+        stdout: StdioCollector {
+            id: colorOnlyOutputCollector
+            onStreamFinished: {
+                const output = colorOnlyOutputCollector.text;
+                if (output.length === 0) return;
+                try {
+                    const parsedContent = JSON.parse(output);
+                    root.dominantColor = parsedContent.dominant_color || Appearance.colors.colPrimary;
+                    if (parsedContent.brightness !== undefined)
+                        root.regionBrightness = parsedContent.brightness / 255.0;
+                } catch (e) {
+                    console.warn("[Widgets] Failed to parse color-only output:", e);
                 }
             }
         }
