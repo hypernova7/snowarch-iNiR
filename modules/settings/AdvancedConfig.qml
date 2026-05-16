@@ -165,6 +165,18 @@ ContentPage {
                     text: Translation.tr("Generate aether.nvim theme plugin for Neovim/LazyVim from wallpaper colors (writes to ~/.config/nvim/lua/plugins/neovim.lua)")
                 }
             }
+            SettingsSwitch {
+                buttonIcon: "equalizer"
+                text: Translation.tr("Cava")
+                checked: Config.options?.appearance?.wallpaperTheming?.enableCava ?? false
+                onCheckedChanged: {
+                    Config.setNestedValue("appearance.wallpaperTheming.enableCava", checked);
+                    colorRegenTimer.restart();
+                }
+                StyledToolTip {
+                    text: Translation.tr("Apply Material You gradient colors to cava audio visualizer config")
+                }
+            }
             ConfigRow {
                 uniform: true
                 SettingsSwitch {
