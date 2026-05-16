@@ -508,7 +508,7 @@ Singleton {
             root.changed()
             return
         default:
-            root.select(normalizedPath, darkMode, monitorName)
+            root.apply(normalizedPath, darkMode, monitorName)
             return
         }
     }
@@ -839,7 +839,7 @@ Singleton {
             if (thumbgenProc.running) return
             thumbgenProc.directory = root._pendingThumbnailDir
             thumbgenProc._size = root._pendingThumbnailSize
-            thumbgenProc.command = [thumbgenScriptPath, "--size", root._pendingThumbnailSize, "--machine_progress", "-d", root._pendingThumbnailDir]
+            thumbgenProc.command = [thumbgenScriptPath, "--size", root._pendingThumbnailSize, "--workers", "4", "--machine_progress", "-d", root._pendingThumbnailDir]
             root.thumbnailGenerationProgress = 0
             thumbgenProc.running = true
         }
