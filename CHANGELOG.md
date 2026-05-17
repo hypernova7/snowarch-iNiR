@@ -25,7 +25,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Notepad tabs in sidebar**: right sidebar notepad now supports multiple tabs.
 - **Background widget auto-fade**: desktop widgets fade when compositor windows overlap them, keeping them unobtrusive during work.
 - **Widget edit mode polish**: scrim overlay, repainted grid canvas, zone occupancy indicators with widget icons and direction arrows, placement strategy badges on widget labels. Drag behavior fixed — release guard, zone snap removed (zones cover entire screen so auto-snap was always wrong).
-- **Custom AI provider management** *(#134)*: add, edit, and delete custom AI providers from Settings → Services. Auto-detects API format from endpoint URL. New Anthropic Messages API strategy (SSE streaming, x-api-key auth) and OpenAI Responses API strategy. Extra models moved from hardcoded to `config.json` entries with cross-process sync via `configChanged` signal.
+- **Custom AI provider management** *(#134)*: add, edit, and delete custom AI providers from Settings → Services. Auto-detects API format from endpoint URL. New Anthropic Messages API strategy (SSE streaming, x-api-key auth) and OpenAI Responses API strategy. Extra models moved from hardcoded to `config.json` entries with cross-process sync via `configChanged` signal. Settings UI reworked with `ConfigSelectionArray` format selector, format icons and badge pills on provider list items, and improved empty state. Sidebar AI indicators (model, tool) are now clickable — prefill the corresponding `/command` to trigger autocomplete. Settings gear shortcut and dynamic placeholder text.
 - **Setup recipes framework** *(#138)*: auto-discovered `/setup-*` launcher actions backed by self-contained, idempotent shell scripts in `scripts/setup/`. Metadata scanner (`_scan.sh`) emits JSON for QML — adding a `.sh` file is enough, no QML changes or restart needed. Shared `_lib.sh` helper with distro detection, progress notifications, and package helpers. First recipe: `spotify.sh` (AUR/Flatpak install, Spicetify + Marketplace). Gated behind `enableSetup` config toggle.
 
 ### Changed
@@ -66,6 +66,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Weather widget shape tooltips**: all tooltip variants were triggering at once instead of only the active shape.
 - **ConfigSelectionArray undefined assignment**: `onYChanged` could fire before children were populated, assigning `undefined` to a `bool`.
 - **Spicetify theme not applying on wallpaper change** *(#138)*: `apply-spicetify-theme.sh` now always calls `spicetify apply` when the watch process is not running, fixing stale theme bundles after wallpaper switch.
+- **Spicetify setup recipe failing on existing installs** *(#138)*: stale backup deadlock (version mismatch preventing both restore and backup), wrong `spotify_path` pointing to spotify-launcher expanded dir instead of `/opt/spotify` (AUR). Recipe now auto-detects the correct path and does progressive recovery (backup → restore backup → nuke stale state → retry).
+- **Setup recipes not executable via CLI**: `globalActions run` IPC handler required 2 arguments but CLI passed 1. Split into `run(actionId)` and `runWithArgs(actionId, args)`.
 
 ### Issues / PRs
 - Fixed [#140](https://github.com/snowarch/iNiR/issues/140), [#144](https://github.com/snowarch/iNiR/issues/144).
