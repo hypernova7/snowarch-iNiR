@@ -25,8 +25,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Notepad tabs in sidebar**: right sidebar notepad now supports multiple tabs.
 - **Background widget auto-fade**: desktop widgets fade when compositor windows overlap them, keeping them unobtrusive during work.
 - **Widget edit mode polish**: scrim overlay, repainted grid canvas, zone occupancy indicators with widget icons and direction arrows, placement strategy badges on widget labels. Drag behavior fixed — release guard, zone snap removed (zones cover entire screen so auto-snap was always wrong).
+- **Custom AI provider management** *(#134)*: add, edit, and delete custom AI providers from Settings → Services. Auto-detects API format from endpoint URL. New Anthropic Messages API strategy (SSE streaming, x-api-key auth) and OpenAI Responses API strategy. Extra models moved from hardcoded to `config.json` entries with cross-process sync via `configChanged` signal.
+- **Setup recipes framework** *(#138)*: auto-discovered `/setup-*` launcher actions backed by self-contained, idempotent shell scripts in `scripts/setup/`. Metadata scanner (`_scan.sh`) emits JSON for QML — adding a `.sh` file is enough, no QML changes or restart needed. Shared `_lib.sh` helper with distro detection, progress notifications, and package helpers. First recipe: `spotify.sh` (AUR/Flatpak install, Spicetify + Marketplace). Gated behind `enableSetup` config toggle.
 
 ### Changed
+- **SDDM pixel theme migrated to Qt6** *(#137)*: `QtGraphicalEffects` → `Qt5Compat.GraphicalEffects`, metadata rewritten from `[Desktop Entry]` to `[SddmGreeterTheme]` format with `QtVersion=6`.
 - **Steam theming moved to Millennium**: Adwaita for Steam is deprecated; theming now goes through Millennium's Material-Theme plugin. Updated translations across all locales.
 - **Aurora configurable glass transparency**: style editor now exposes glass opacity. Fixed live reactivity that was broken because Config.revision wasn't being used as a dependency.
 - **Doctor TUI overhaul**: animated steps with palette-aware badges, dot threshold, tagline centering. All deps now required (wlsunset added). Font list cleanup. Quickconfig buttons theme-adaptive. Compact output.
@@ -62,9 +65,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Notification popup lifetime**: fixed urgency comparison and added configurable `maxPopupLifetime`.
 - **Weather widget shape tooltips**: all tooltip variants were triggering at once instead of only the active shape.
 - **ConfigSelectionArray undefined assignment**: `onYChanged` could fire before children were populated, assigning `undefined` to a `bool`.
+- **Spicetify theme not applying on wallpaper change** *(#138)*: `apply-spicetify-theme.sh` now always calls `spicetify apply` when the watch process is not running, fixing stale theme bundles after wallpaper switch.
 
 ### Issues / PRs
 - Fixed [#140](https://github.com/snowarch/iNiR/issues/140), [#144](https://github.com/snowarch/iNiR/issues/144).
+- Included contributions from [#134](https://github.com/snowarch/iNiR/pull/134), [#137](https://github.com/snowarch/iNiR/pull/137), [#138](https://github.com/snowarch/iNiR/pull/138).
+
+### Contributors
+Thanks to [@EldoDvae](https://github.com/EldoDvae) for the SDDM Qt6 migration ([#137](https://github.com/snowarch/iNiR/pull/137)), [@Aurorainic](https://github.com/Aurorainic) for custom AI provider support ([#134](https://github.com/snowarch/iNiR/pull/134)), and [@yukazakiri](https://github.com/yukazakiri) for the setup recipes framework and Spicetify fix ([#138](https://github.com/snowarch/iNiR/pull/138)).
 
 ## [2.24.0] - 2026-04-30
 
