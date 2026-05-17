@@ -301,6 +301,29 @@ Scope {
         }
     }
 
+    // Detached AI chat window — same process, shares Ai service + theming
+    Loader {
+        active: GlobalStates.aiChatDetached
+        sourceComponent: FloatingWindow {
+            id: aiChatWindow
+            visible: true
+            title: "iNiR AI Chat"
+            implicitWidth: 520
+            implicitHeight: 780
+            minimumSize: Qt.size(380, 400)
+            color: Appearance.colors.colLayer0
+
+            onVisibleChanged: {
+                if (!visible) GlobalStates.aiChatDetached = false
+            }
+
+            AiChat {
+                anchors.fill: parent
+                anchors.margins: 8
+            }
+        }
+    }
+
     IpcHandler {
         target: "sidebarLeft"
 
@@ -314,6 +337,16 @@ Scope {
 
         function open(): void {
             GlobalStates.sidebarLeftOpen = true;
+        }
+
+        function detach(): void {
+            GlobalStates.sidebarLeftOpen = false;
+            GlobalStates.sidebarLeftExpanded = false;
+            GlobalStates.aiChatDetached = true;
+        }
+
+        function attach(): void {
+            GlobalStates.aiChatDetached = false;
         }
     }
 

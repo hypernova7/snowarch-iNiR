@@ -296,8 +296,8 @@ Inline w/ backslash and round brackets \\(e^{i\\pi} + 1 = 0\\)
             layer.enabled: true
             layer.effect: OpacityMask {
                 maskSource: Rectangle {
-                    width: swipeView?.width ?? parent.width
-                    height: swipeView?.height ?? parent.height
+                    width: root.width
+                    height: root.height
                     radius: Appearance.rounding.small
                 }
             }

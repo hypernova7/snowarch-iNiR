@@ -113,7 +113,7 @@ Other:
   theme <list-targets|inspect|doctor|apply|scaffold> [args...]
   completions <bash|zsh|fish>
   service <install|uninstall|enable|disable|start|stop|restart|status|logs>
-  repair, path, test-local, settings-window, waffle-settings-window, ai-window
+  repair, path, test-local, settings-window, waffle-settings-window
 EOF
 }
 
@@ -2598,17 +2598,6 @@ case "$command_name" in
         done
         resolve_config_dir
         open_detached_qml_window "$config_dir" "waffleSettings.qml"
-        ;;
-    ai-window)
-        require_qs
-        while [[ $# -gt 0 ]]; do
-            case "$1" in
-                -c|--config) parse_config_flag "$@"; shift 2 ;;
-                *) echo "Unknown option: $1" >&2; exit 1 ;;
-            esac
-        done
-        resolve_config_dir
-        open_detached_qml_window "$config_dir" "aiChat.qml"
         ;;
     welcome)
         require_qs

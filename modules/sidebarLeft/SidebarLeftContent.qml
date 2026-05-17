@@ -356,7 +356,7 @@ Item {
                 else if (event.key === Qt.Key_P) {
                     GlobalStates.sidebarLeftOpen = false
                     GlobalStates.sidebarLeftExpanded = false
-                    Quickshell.execDetached([Quickshell.shellPath("scripts/inir"), "ai-window"])
+                    GlobalStates.aiChatDetached = true
                     event.accepted = true
                 }
             }
